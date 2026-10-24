@@ -1,0 +1,3096 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="《永昼便利店：伪人规则怪谈》单文件离线规则怪谈文字游戏：12 条互相矛盾的员工守则、22 个剧情节点、24 种结局、7 份矛盾证据。时钟停在 03:33，在账被结清之前，证明自己是一件被错误入库的商品。">
+<title>永昼便利店：伪人规则怪谈</title>
+<style>
+:root{
+  --bg:#04070a;
+  --ink:#d6e4d9;
+  --dim:#6d8578;
+  --faint:#42554b;
+  --accent:#9fe8c0;
+  --ok:#35d07f;
+  --warn:#ffb020;
+  --bad:#ff453a;
+  --panel:rgba(8,16,12,.55);
+  --line:rgba(159,232,192,.22);
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+html,body{ height:100%; }
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  overflow:hidden;
+}
+button{
+  font-family:inherit;
+  color:var(--ink);
+  background:rgba(10,22,16,.7);
+  border:1px solid var(--line);
+  padding:10px 18px;
+  font-size:15px;
+  letter-spacing:.14em;
+  cursor:pointer;
+  transition:border-color .2s, box-shadow .2s, transform .2s, background .2s;
+}
+button:hover{
+  border-color:var(--accent);
+  box-shadow:0 0 14px rgba(159,232,192,.25), inset 0 0 10px rgba(159,232,192,.08);
+  transform:translateY(-1px);
+}
+
+/* ===== CRT 覆盖层：扫描线 + 双层噪波 + 暗角 ===== */
+#crt-overlay{ position:fixed; inset:0; pointer-events:none; z-index:95; }
+#crt-overlay::before{
+  content:"";
+  position:absolute; inset:0;
+  background:repeating-linear-gradient(to bottom, rgba(3,7,5,.22) 0px, rgba(3,7,5,.22) 1px, transparent 1px, transparent 4px);
+  animation:scanroll 9s linear infinite;
+}
+#crt-overlay::after{
+  content:"";
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 44%, transparent 50%, rgba(0,0,0,.34) 78%, rgba(0,0,0,.74) 100%);
+}
+#crt-overlay .noi{ position:absolute; inset:-80px; opacity:.06; mix-blend-mode:screen; }
+#crt-overlay .n1{
+  background:repeating-linear-gradient(113deg, rgba(180,255,220,.30) 0 2px, transparent 2px 13px, rgba(140,205,255,.22) 13px 15px, transparent 15px 27px);
+  animation:noise1 7s steps(6) infinite;
+}
+#crt-overlay .n2{
+  background:repeating-linear-gradient(67deg, rgba(255,120,160,.18) 0 2px, transparent 2px 11px, rgba(160,255,240,.14) 11px 13px, transparent 13px 25px);
+  animation:noise2 11s steps(8) infinite;
+}
+@keyframes scanroll{ from{ background-position:0 0; } to{ background-position:0 64px; } }
+@keyframes noise1{
+  0%{ transform:translate(-16px,-8px); }
+  25%{ transform:translate(12px,-16px); }
+  50%{ transform:translate(-8px,14px); }
+  75%{ transform:translate(16px,6px); }
+  100%{ transform:translate(-16px,-8px); }
+}
+@keyframes noise2{
+  0%{ transform:translate(12px,14px); }
+  20%{ transform:translate(-14px,8px); }
+  45%{ transform:translate(9px,-12px); }
+  70%{ transform:translate(-12px,-15px); }
+  100%{ transform:translate(12px,14px); }
+}
+
+/* ===== 整机轻微闪烁 ===== */
+#app{ animation:appflicker 6.4s linear infinite; }
+@keyframes appflicker{
+  0%,100%{ opacity:1; }
+  3%{ opacity:.93; }
+  4%{ opacity:1; }
+  41%{ opacity:.97; }
+  42%{ opacity:1; }
+  67%{ opacity:.9; }
+  68.5%{ opacity:.98; }
+  69%{ opacity:1; }
+  87%{ opacity:.95; }
+  88%{ opacity:1; }
+}
+
+/* ===== 屏幕切换 ===== */
+.screen{ display:none; position:relative; min-height:100vh; }
+.screen.active{ display:flex; }
+
+/* ===== 标题屏 ===== */
+#screen-title.active{ flex-direction:column; align-items:center; justify-content:center; gap:20px; text-align:center; padding:24px; }
+.game-title{
+  position:relative;
+  font-size:clamp(42px, 8vw, 86px);
+  font-weight:700;
+  letter-spacing:.14em;
+  color:#e9f5ec;
+  text-shadow:0 0 22px rgba(150,255,190,.22);
+  animation:titleflick 4.6s steps(1) infinite;
+}
+.game-title::before,.game-title::after{
+  content:attr(data-text);
+  position:absolute; left:0; top:0; width:100%;
+  opacity:.8; mix-blend-mode:screen; pointer-events:none;
+}
+.game-title::before{
+  color:#ff2d55;
+  animation:tglitchA 3.2s steps(2) infinite;
+}
+.game-title::after{
+  color:#28e0ff;
+  animation:tglitchB 2.7s steps(2) infinite;
+}
+@keyframes tglitchA{
+  0%,84%,100%{ transform:translate(-2px,0); clip-path:inset(0 0 60% 0); }
+  86%{ transform:translate(4px,-2px); clip-path:inset(12% 0 46% 0); }
+  91%{ transform:translate(-5px,1px); clip-path:inset(34% 0 26% 0); }
+  95%{ transform:translate(3px,2px); clip-path:inset(66% 0 8% 0); }
+}
+@keyframes tglitchB{
+  0%,80%,100%{ transform:translate(2px,0); clip-path:inset(52% 0 0 0); }
+  83%{ transform:translate(-4px,2px); clip-path:inset(20% 0 40% 0); }
+  89%{ transform:translate(5px,-1px); clip-path:inset(58% 0 12% 0); }
+  93%{ transform:translate(-3px,0); clip-path:inset(4% 0 74% 0); }
+}
+@keyframes titleflick{
+  0%,100%{ opacity:1; }
+  47%{ opacity:1; }
+  48%{ opacity:.72; }
+  49%{ opacity:1; }
+  82%{ opacity:1; }
+  83%{ opacity:.85; }
+  84%{ opacity:1; }
+}
+.game-subtitle{ font-size:clamp(16px,3vw,22px); letter-spacing:.7em; text-indent:.7em; color:var(--accent); opacity:.85; }
+.title-tagline{ color:var(--dim); font-size:14px; letter-spacing:.1em; }
+#screen-title .menu{ display:flex; flex-direction:column; gap:12px; margin-top:14px; width:min(280px,80vw); }
+#screen-title .menu button{ width:100%; }
+.title-foot{ color:var(--faint); font-size:12px; letter-spacing:.28em; margin-top:16px; }
+
+/* ===== 游戏屏 ===== */
+#screen-game.active{ flex-direction:column; height:100vh; }
+#statusbar{
+  display:flex; flex-wrap:wrap; align-items:center; gap:14px 22px;
+  padding:10px 18px;
+  border-bottom:1px solid rgba(159,232,192,.14);
+  background:linear-gradient(to bottom, rgba(6,12,9,.9), rgba(6,12,9,.55));
+  z-index:5;
+}
+.stat-block{ display:flex; align-items:center; gap:8px; }
+.stat-label{ font-size:11px; letter-spacing:.22em; color:var(--dim); white-space:nowrap; }
+.bar-track{ width:130px; height:10px; border:1px solid rgba(159,232,192,.28); background:rgba(0,0,0,.55); position:relative; overflow:hidden; }
+.bar-fill{ height:100%; width:0; transition:width .5s ease; }
+#bar-san.ok{ background:linear-gradient(90deg,#1f8f56,var(--ok)); box-shadow:0 0 8px rgba(53,208,127,.5); }
+#bar-san.warn{ background:linear-gradient(90deg,#a8720f,var(--warn)); box-shadow:0 0 8px rgba(255,176,32,.45); }
+#bar-san.bad{ background:linear-gradient(90deg,#8f1f16,var(--bad)); box-shadow:0 0 10px rgba(255,69,58,.6); animation:barshake .34s linear infinite; }
+@keyframes barshake{ 0%,100%{ transform:translateX(0); } 25%{ transform:translateX(-1.5px); } 75%{ transform:translateX(1.5px); } }
+#bar-assim{ background:linear-gradient(90deg,#3f6b58,#a9c3a2,#f2efe2); box-shadow:0 0 8px rgba(220,235,215,.35); }
+.stat-num{ font-size:13px; letter-spacing:.08em; min-width:2.4em; text-align:right; font-variant-numeric:tabular-nums; }
+#san-block.critical .stat-label{ color:var(--bad); animation:labelshake .4s linear infinite; }
+#san-block.critical .stat-num{ color:var(--bad); }
+@keyframes labelshake{ 0%,100%{ transform:translateX(0); } 30%{ transform:translateX(-2px); } 70%{ transform:translateX(1px); } }
+#staff-match-hint{
+  display:none;
+  font-size:11px; letter-spacing:.2em; color:#f2efe2;
+  animation:matchpulse 2.4s ease-in-out infinite;
+}
+#staff-match-hint.visible{ display:inline-block; }
+@keyframes matchpulse{ 0%,100%{ opacity:.4; } 50%{ opacity:1; text-shadow:0 0 9px rgba(242,239,226,.65); } }
+#clue-count{ font-size:13px; color:var(--accent); letter-spacing:.12em; }
+#clock-block{ margin-left:auto; display:flex; align-items:center; gap:8px; }
+#clock-time{
+  font-size:20px; letter-spacing:.18em; color:#e9f5ec;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 0 12px rgba(233,245,236,.4);
+  animation:clockjitter 5s steps(1) infinite;
+}
+#clock-time .colon{ animation:colonblink 2s steps(1) infinite; }
+@keyframes colonblink{ 50%{ opacity:.2; } }
+@keyframes clockjitter{
+  0%,92%,100%{ transform:translate(0,0); }
+  93%{ transform:translate(-1px,1px); }
+  95%{ transform:translate(1px,-1px); }
+}
+#statusbar-buttons{ display:flex; gap:8px; }
+#statusbar-buttons button{ padding:6px 12px; font-size:12px; letter-spacing:.18em; }
+
+#story{
+  flex:1; overflow-y:auto;
+  padding:20px 20px 10px;
+  scroll-behavior:smooth;
+  cursor:pointer;
+}
+.story-inner{ max-width:720px; margin:0 auto; }
+#ambient-line{
+  color:var(--dim);
+  font-style:italic;
+  font-size:14px;
+  line-height:1.8;
+  opacity:0;
+  border-left:2px solid rgba(109,133,120,.45);
+  padding-left:12px;
+  margin-bottom:18px;
+}
+#ambient-line.show{ animation:ambientin 2.2s ease forwards; }
+@keyframes ambientin{ from{ opacity:0; transform:translateY(5px); } to{ opacity:.9; transform:none; } }
+.story-para{
+  margin:0 0 16px;
+  font-family:Georgia,"NSimSun","SimSun",serif;
+  font-size:16.5px;
+  line-height:2.0;
+  color:var(--ink);
+  text-align:justify;
+  word-break:break-word;
+}
+#whisper-line{
+  margin-top:8px;
+  color:#9fb8a8;
+  font-style:italic;
+  font-size:14.5px;
+  letter-spacing:.12em;
+  filter:blur(1.1px);
+  opacity:0;
+}
+#whisper-line.show{ animation:whisperin 3.6s ease forwards; }
+@keyframes whisperin{
+  0%{ opacity:0; letter-spacing:.5em; transform:translateY(6px); }
+  100%{ opacity:.92; letter-spacing:.12em; transform:none; }
+}
+
+/* San 值过低：正文容器故障效果（RGB 分离 + 切片 + 偶发倾斜） */
+#story.san-glitch #para-box{
+  text-shadow:1.6px 0 rgba(255,40,80,.62), -1.6px 0 rgba(0,220,255,.55);
+  animation:textglitch 1.7s steps(1) infinite;
+}
+@keyframes textglitch{
+  0%,87%,100%{ transform:none; clip-path:none; filter:none; }
+  88%{ transform:translateX(3px) skewX(3.5deg); clip-path:inset(6% 0 58% 0); }
+  90%{ transform:translateX(-4px); clip-path:inset(44% 0 24% 0); }
+  92%{ transform:translateX(2px) skewX(-5deg); clip-path:inset(70% 0 4% 0); }
+  94%{ transform:none; clip-path:none; }
+}
+
+#choices{
+  display:flex; flex-direction:column; gap:9px;
+  padding:8px 20px 16px;
+  max-height:44vh; overflow-y:auto;
+  border-top:1px solid rgba(159,232,192,.1);
+  background:linear-gradient(to top, rgba(6,12,9,.85), rgba(6,12,9,.4));
+}
+.choice-btn{ text-align:left; line-height:1.6; }
+.choice-btn:hover{ transform:translateX(4px); }
+#click-hint{
+  text-align:center; color:var(--faint); font-size:11px; letter-spacing:.24em;
+  padding:0 0 10px;
+}
+
+/* ===== 低语浮层 ===== */
+#whisper-layer{ position:fixed; inset:0; pointer-events:none; z-index:70; overflow:hidden; }
+.world-whisper{
+  position:absolute; left:50%; top:16%;
+  max-width:76vw;
+  transform:translateX(-50%);
+  color:rgba(214,235,222,.85);
+  font-style:italic;
+  font-size:15px;
+  letter-spacing:.14em;
+  filter:blur(1.2px);
+  text-shadow:0 0 12px rgba(160,255,200,.3);
+  animation:whisperfloat 6s ease forwards;
+  text-align:center;
+}
+@keyframes whisperfloat{
+  0%{ opacity:0; transform:translateX(-50%) translateY(10px); }
+  14%{ opacity:.88; }
+  70%{ opacity:.5; }
+  100%{ opacity:0; transform:translateX(-50%) translateY(-14px); }
+}
+
+/* ===== 结局屏 ===== */
+#screen-ending.active{ flex-direction:column; align-items:center; justify-content:flex-start; overflow-y:auto; padding:48px 20px 40px; }
+#end-inner{ max-width:720px; width:100%; display:flex; flex-direction:column; gap:16px; }
+#end-type-tag{ font-size:12px; letter-spacing:.4em; color:var(--dim); }
+#end-title{ font-size:clamp(30px,5vw,44px); letter-spacing:.2em; font-weight:700; }
+#end-rule{
+  border:1px solid rgba(255,69,58,.4);
+  background:rgba(60,8,5,.35);
+  padding:12px 14px;
+  font-size:14px; line-height:1.8; color:#ffb4ae;
+}
+#end-rule .rule-tag{ color:#ff453a; letter-spacing:.18em; display:block; margin-bottom:6px; font-size:12px; }
+#end-text{ cursor:pointer; min-height:120px; }
+#btn-end-back{ align-self:center; margin-top:10px; }
+
+/* 死亡结局：黑底红字 + 暗角加深 + 红色脉冲 */
+#screen-ending.ending-death{ background:#000; }
+.ending-death #end-type-tag{ color:#8f4a45; }
+.ending-death #end-title{ color:#ff3b30; text-shadow:0 0 18px rgba(255,59,48,.5); animation:deathflick 4s steps(1) infinite; }
+.ending-death .story-para{ color:#e05248; }
+.ending-death #btn-end-back{ color:#ffb4ae; border-color:rgba(255,69,58,.5); }
+@keyframes deathflick{
+  0%,100%{ opacity:1; }
+  31%{ opacity:1; } 32%{ opacity:.6; } 33%{ opacity:1; }
+  71%{ opacity:1; } 72%{ opacity:.75; } 73.5%{ opacity:1; }
+}
+.ending-death::after{
+  content:"";
+  position:fixed; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(ellipse at 50% 50%, transparent 26%, rgba(96,0,0,.42) 74%, rgba(40,0,0,.88) 100%);
+  animation:redpulse 2.8s ease-in-out infinite;
+}
+@keyframes redpulse{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+
+/* 同化结局：渐变便利店化 */
+#screen-ending.ending-assim{
+  background:linear-gradient(158deg,#f2efe2 0%,#e3eadd 40%,#cddacf 78%,#b9cabb 100%);
+  animation:assimshift 9s ease-in-out infinite alternate;
+}
+@keyframes assimshift{ from{ filter:hue-rotate(0deg) brightness(1); } to{ filter:hue-rotate(-14deg) brightness(1.05); } }
+.ending-assim #end-type-tag{ color:#6b7a6e; }
+.ending-assim #end-title{
+  background:linear-gradient(92deg,#4c5b50,#93a496,#d7e2d5,#93a496,#4c5b50);
+  background-size:220% 100%;
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+  animation:assimtext 7s linear infinite;
+}
+@keyframes assimtext{ from{ background-position:0% 0; } to{ background-position:220% 0; } }
+.ending-assim .story-para{ color:#3c4a40; }
+.ending-assim #btn-end-back{ color:#3c4a40; border-color:rgba(60,74,64,.5); background:rgba(255,255,255,.3); }
+.ending-assim #end-rule{ display:none; }
+.assim-barcode{
+  height:34px; margin-top:6px;
+  background:repeating-linear-gradient(90deg,#2c352e 0 2px,transparent 2px 5px,#2c352e 5px 9px,transparent 9px 12px,#2c352e 12px 13px,transparent 13px 18px);
+  opacity:.55;
+}
+
+/* 真结局：白昼渐亮 */
+#screen-ending.ending-true{ background:#0b0e0c; animation:daybreak 7s ease forwards; }
+@keyframes daybreak{
+  0%{ background-color:#0b0e0c; }
+  55%{ background-color:#93a396; }
+  100%{ background-color:#fdfbf2; }
+}
+.ending-true #end-inner{ animation:daybreaktext 7s ease forwards; }
+@keyframes daybreaktext{
+  0%{ color:#e9f2ea; text-shadow:0 0 12px rgba(255,255,220,.25); }
+  60%{ color:#54655a; text-shadow:none; }
+  100%{ color:#333f36; text-shadow:none; }
+}
+.ending-true #end-type-tag{ color:inherit; }
+.ending-true #end-title{ color:inherit; }
+.ending-true .story-para{ color:inherit; }
+.ending-true #btn-end-back{ color:inherit; border-color:currentColor; background:transparent; }
+.ending-true::after{
+  content:"";
+  position:fixed; inset:0; pointer-events:none; z-index:1;
+  background:radial-gradient(ellipse at 50% -10%, rgba(255,244,200,.5), transparent 55%);
+  animation:truedawn 7s ease forwards;
+}
+@keyframes truedawn{ from{ opacity:0; } to{ opacity:1; } }
+
+/* ===== 弹层 ===== */
+.modal{
+  position:fixed; inset:0; z-index:90;
+  display:none; align-items:center; justify-content:center;
+  background:rgba(2,5,4,.8);
+  padding:22px;
+}
+.modal.open{ display:flex; }
+.modal-box{
+  background:#0a120d;
+  border:1px solid var(--line);
+  box-shadow:0 0 46px rgba(0,0,0,.75);
+  max-width:700px; width:100%;
+  max-height:84vh; overflow-y:auto;
+  padding:22px 26px 26px;
+  position:relative;
+}
+.modal-box h3{
+  font-size:17px; letter-spacing:.3em; color:var(--accent);
+  margin-bottom:16px; padding-right:40px;
+}
+.modal-close{
+  position:absolute; top:14px; right:14px;
+  padding:4px 12px; font-size:16px; line-height:1.4;
+}
+.notepad-sec{ margin-bottom:22px; }
+.notepad-sec h4{
+  font-size:13px; letter-spacing:.24em; color:var(--dim);
+  margin-bottom:10px; border-bottom:1px dashed rgba(109,133,120,.35); padding-bottom:6px;
+}
+.rule-row{ padding:9px 10px; border:1px solid rgba(159,232,192,.12); margin-bottom:8px; background:rgba(10,20,15,.4); }
+.rule-row.locked{ color:var(--faint); letter-spacing:.3em; opacity:.6; }
+.rule-id{ display:inline-block; color:var(--accent); font-size:12px; letter-spacing:.16em; margin-right:10px; }
+.rule-row.locked .rule-id{ color:var(--faint); }
+.rule-text{ font-size:14px; line-height:1.8; margin-top:4px; color:var(--ink); }
+.conflict-chip{
+  display:inline-block; margin:6px 6px 0 0;
+  font-size:11px; letter-spacing:.12em; color:var(--warn);
+  border:1px solid rgba(255,176,32,.4); padding:2px 8px;
+  background:rgba(255,176,32,.07);
+}
+.clue-row{ padding:9px 10px; border-left:2px solid rgba(159,232,192,.35); margin-bottom:8px; background:rgba(10,20,15,.4); }
+.clue-row.locked{ border-left-color:rgba(66,85,75,.5); color:var(--faint); letter-spacing:.3em; opacity:.6; }
+.clue-name{ font-size:14px; color:var(--accent); letter-spacing:.1em; }
+.clue-desc{ font-size:13px; line-height:1.8; color:#a9bfb1; margin-top:4px; }
+.item-kind{
+  display:inline-block; font-size:10px; letter-spacing:.14em;
+  color:#0a120d; background:var(--accent);
+  padding:1px 6px; margin-right:8px; vertical-align:2px;
+}
+.item-kind.major{ background:var(--warn); }
+.empty-line{ color:var(--faint); font-size:13px; letter-spacing:.14em; }
+
+#gallery-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr)); gap:10px; }
+.gallery-cell{
+  border:1px solid rgba(159,232,192,.16);
+  background:rgba(8,16,12,.5);
+  min-height:88px; padding:10px;
+  display:flex; flex-direction:column; gap:5px;
+}
+.gallery-cell.locked{ opacity:.4; }
+.gallery-cell .g-title{ font-size:14px; letter-spacing:.1em; color:var(--ink); }
+.gallery-cell.locked .g-title{ color:var(--faint); letter-spacing:.34em; }
+.gallery-cell .g-type{ font-size:11px; letter-spacing:.2em; }
+.gallery-cell.t-death .g-type{ color:#ff6b61; }
+.gallery-cell.t-assimilation .g-type{ color:#cfd8b8; }
+.gallery-cell.t-true .g-type{ color:#ffe9a8; }
+.gallery-cell .g-date{ font-size:11px; color:var(--dim); font-variant-numeric:tabular-nums; }
+#gallery-sub{ font-size:12px; color:var(--dim); letter-spacing:.16em; margin-bottom:14px; }
+
+.help-sec{ margin-bottom:14px; }
+.help-sec h4{ font-size:13px; color:var(--accent); letter-spacing:.22em; margin-bottom:6px; }
+.help-sec p{ font-size:13.5px; line-height:1.9; color:#b7cabb; }
+.help-sec b{ color:var(--ink); }
+
+.confirm-row{ display:flex; gap:12px; justify-content:flex-end; margin-top:18px; }
+.confirm-text{ font-size:14px; line-height:1.9; color:#b7cabb; }
+
+/* 滚动条 */
+::-webkit-scrollbar{ width:8px; }
+::-webkit-scrollbar-track{ background:rgba(0,0,0,.4); }
+::-webkit-scrollbar-thumb{ background:rgba(159,232,192,.25); }
+
+@media (max-width:640px){
+  #statusbar{ gap:8px 14px; }
+  .bar-track{ width:92px; }
+  #clock-block{ margin-left:0; }
+  #story{ padding:14px 14px 6px; }
+  #choices{ padding:8px 14px 12px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="crt-overlay" aria-hidden="true"><i class="noi n1"></i><i class="noi n2"></i></div>
+  <div id="whisper-layer" aria-hidden="true"></div>
+
+  <section id="screen-title" class="screen active">
+    <h1 class="game-title" data-text="永昼便利店">永昼便利店</h1>
+    <p class="game-subtitle">伪人规则怪谈</p>
+    <p class="title-tagline">一家灯火通明的便利店，一份自相矛盾的守则，和一个正在混进员工名单里的你。</p>
+    <div class="menu">
+      <button id="btn-start" type="button">开始值班</button>
+      <button id="btn-gallery" type="button">结局图鉴</button>
+      <button id="btn-help" type="button">玩法说明</button>
+    </div>
+    <p class="title-foot">营业时间 0:00 至 6:00 · 本店永不打烊</p>
+  </section>
+
+  <section id="screen-game" class="screen">
+    <header id="statusbar">
+      <div class="stat-block" id="san-block">
+        <span class="stat-label">理智 SAN</span>
+        <span class="bar-track"><span class="bar-fill" id="bar-san"></span></span>
+        <span class="stat-num" id="san-num">100</span>
+      </div>
+      <div class="stat-block" id="assim-block">
+        <span class="stat-label">同化率</span>
+        <span class="bar-track"><span class="bar-fill" id="bar-assim"></span></span>
+        <span class="stat-num" id="assim-num">0</span>
+        <span id="staff-match-hint">店员匹配度</span>
+      </div>
+      <div class="stat-block">
+        <span class="stat-label">线索</span>
+        <span id="clue-count">0/7</span>
+      </div>
+      <div class="stat-block" id="clock-block">
+        <span class="stat-label">时间</span>
+        <span id="clock-time">03<span class="colon">:</span>33</span>
+      </div>
+      <div id="statusbar-buttons">
+        <button id="btn-notepad" type="button">便签本</button>
+        <button id="btn-gallery2" type="button">结局图鉴</button>
+        <button id="btn-restart" type="button">重新开始</button>
+      </div>
+    </header>
+    <main id="story">
+      <div class="story-inner">
+        <p id="ambient-line"></p>
+        <div id="para-box"></div>
+        <p id="whisper-line"></p>
+      </div>
+    </main>
+    <nav id="choices"></nav>
+    <p id="click-hint">点击正文可跳过当前段落</p>
+  </section>
+
+  <section id="screen-ending" class="screen">
+    <div id="end-inner">
+      <p id="end-type-tag"></p>
+      <h2 id="end-title"></h2>
+      <p id="end-rule"></p>
+      <div id="end-text"></div>
+      <button id="btn-end-back" type="button">返回标题</button>
+    </div>
+  </section>
+
+  <div class="modal" id="modal-notepad">
+    <div class="modal-box">
+      <h3>员工便签本</h3>
+      <button class="modal-close" id="btn-close-notepad" type="button">×</button>
+      <div id="notepad-body"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-gallery">
+    <div class="modal-box">
+      <h3>结局图鉴</h3>
+      <button class="modal-close" id="btn-close-gallery" type="button">×</button>
+      <p id="gallery-sub"></p>
+      <div id="gallery-grid"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-help">
+    <div class="modal-box">
+      <h3>玩法说明</h3>
+      <button class="modal-close" id="btn-close-help" type="button">×</button>
+      <div class="help-sec">
+        <h4>规则怪谈</h4>
+        <p>你是一名夜班店员。入职时拿到的<b>员工守则</b>条目之间彼此矛盾，而店里的"同事"与"顾客"里混着并非人类的东西。阅读正文、做出选择；触犯守则的选择可能直接通向死亡结局，而守则之间的矛盾缝隙里，藏着活下去的路。</p>
+      </div>
+      <div class="help-sec">
+        <h4>理智 SAN</h4>
+        <p>初始 100。直视店里的异常会降低它。<b>跌到 0</b> 会被强制划掉，值班结束。低于 30 时，屏幕会替你表现出崩溃：文字重影、切片抖动、字符上长出陌生的附着符；理智回升后文本会恢复干净。状态栏的理智条在充足时为绿色、动摇时为黄色、危险时抖动的红色。</p>
+      </div>
+      <div class="help-sec">
+        <h4>同化率</h4>
+        <p>初始 0。顺从"店"的行为会抬高它。<b>达到 100</b> 会被强制上架，成为商品。达到 60 之后，状态栏会出现"店员匹配度"的字样，店里会周期性浮现不属于你的低语，请注意分辨哪些话是你自己想的。</p>
+      </div>
+      <div class="help-sec">
+        <h4>线索</h4>
+        <p>共有 <b>7 份矛盾证据</b>散落在流程里（价签、小票、名单、检修单、工牌、库存、时钟），收集进度显示在状态栏。它们是你在结算时唯一的谈判筹码。</p>
+      </div>
+      <div class="help-sec">
+        <h4>隐藏判定</h4>
+        <p>部分选项只在条件满足时才会出现：足够的理智、身上带着某件物品、或手握足够多的证据。<b>没有出现的选项，就是暂时还不属于你的路。</b>便签本里可以随时核对守则、线索与随身物品。</p>
+      </div>
+      <div class="help-sec">
+        <h4>观察提示</h4>
+        <p>店会记住你做过的某些小事：敲过冷柜、装睡过一次、在名单上留下过笔迹、替谁保留过名字。这些被记住的事，会在之后的夜里悄悄改变它对你的态度与你的去向。</p>
+      </div>
+      <div class="help-sec">
+        <h4>结局图鉴</h4>
+        <p>全篇共有 <b>24 种结局</b>。达成过的结局会永久记录在本机浏览器中；未达成的条目只显示问号。祝你在 03:33 的白光里，交出一个完完整的班。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-confirm">
+    <div class="modal-box">
+      <h3>重新开始</h3>
+      <p class="confirm-text">确定要放弃本次值班，从 0:00 重新入职吗？本次的线索与物品将一同作废。</p>
+      <div class="confirm-row">
+        <button id="btn-confirm-no" type="button">取消</button>
+        <button id="btn-confirm-yes" type="button">确定重来</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const GAME_DATA = /*__GAME_DATA_START__*/{
+  "meta": {
+    "title": "永昼便利店：伪人规则怪谈",
+    "startNode": "n_start",
+    "sanGlitchBelow": 30,
+    "sanZeroEndingId": "end_crossed_out",
+    "assimFullEndingId": "end_shelved",
+    "worldShiftWhispers": [
+      "收银机在没有任何顾客的时候响了一声。它说：挂账，挂账。",
+      "货架深处传来价签翻转的声音，一张，又一张，像在找你的名字。",
+      "灯管眨眼的频率，和你的心跳越来越同步。",
+      "广播说：感谢某位员工对本店业绩的突出贡献。它没有念名字，但所有的灯都转向了你。",
+      "冷柜的三长两短停了。它已经不需要敲门了。",
+      "小票背面开始只印一个字：他。你盯着看了一会儿，觉得那个字有点像你。",
+      "你数了数今晚说过的话，大部分是守则上的原句。",
+      "打卡机的咔哒声和你的心跳重合了三次。第四次，它先响了。",
+      "玻璃门只朝里开。你忽然想不起来自己是怎么进来的。",
+      "在岗名单在柜台上轻轻舒展，你的名字离“秦守时”三个字又近了一行。",
+      "时钟秒针抖动的间隔，开始等于你眨眼的间隔。",
+      "值班经理夸你越来越有员工的样子。这一次，它的眼睛先动了。"
+    ]
+  },
+  "formulas": {
+    "sanInit": 100,
+    "sanMin": 0,
+    "sanMax": 100,
+    "assimInit": 0,
+    "assimMin": 0,
+    "assimMax": 100,
+    "assimWorldShiftAt": 60,
+    "clueGoal": 7
+  },
+  "rules": [
+    {
+      "id": "R01",
+      "text": "你的班次是凌晨0:00至6:00。收银台的时钟停在03:33时，请照常工作，不要催它；当时钟重新走动，交接班将立刻开始——请务必在场。",
+      "conflictWith": [
+        "R12"
+      ],
+      "revealNode": "n_start"
+    },
+    {
+      "id": "R02",
+      "text": "结账前请确认条形码。没有条形码的东西不是商品：不要扫码，不要触碰，不要打听价格。请微笑着请顾客自行处理。",
+      "conflictWith": [
+        "R09"
+      ],
+      "revealNode": "n_start"
+    },
+    {
+      "id": "R03",
+      "text": "本店没有3号货架。顾客问起时，请回答“不知道”；如果“同事”要你去3号货架补货，请照做——补货时不要挑选，拿到什么就是什么。",
+      "conflictWith": [
+        "R05"
+      ],
+      "revealNode": "n_tour"
+    },
+    {
+      "id": "R04",
+      "text": "冷柜属于前任店长。无论里面传出什么声音，都不要回应，更不要打开。前任店长很守时，TA会自己出来清点。",
+      "conflictWith": [
+        "R09"
+      ],
+      "revealNode": "n_freezer_intro"
+    },
+    {
+      "id": "R05",
+      "text": "回答顾客提问时请保持诚实。“不知道”只在你真的不知道时才可以说。谎言会被记账，账，是要还的。",
+      "conflictWith": [
+        "R03"
+      ],
+      "revealNode": "n_start"
+    },
+    {
+      "id": "R06",
+      "text": "本店永远灯火通明，任何一盏灯都不许熄灭。如果你看见某盏灯在闪烁，请立刻背对它，大声从1数到30，期间不得处理任何其他事务。",
+      "conflictWith": [
+        "R07"
+      ],
+      "revealNode": "n_start"
+    },
+    {
+      "id": "R07",
+      "text": "凌晨3:00，收银机会自动打印“在岗名单”。若名单上的名字比在岗人数多一个，请找到多出来的那个人，用红笔在TA的名字上画一条横线。",
+      "conflictWith": [
+        "R11",
+        "R06"
+      ],
+      "revealNode": "n_3am_rollcall"
+    },
+    {
+      "id": "R08",
+      "text": "凌晨2:00至2:30为休息时间。你可以睡在休息室的折叠床上，但必须侧躺、面向墙壁。无论听见谁用谁的声音叫你，都不要睁眼，不要应答。",
+      "conflictWith": [],
+      "revealNode": "n_start"
+    },
+    {
+      "id": "R09",
+      "text": "顾客永远是对的。不得拒绝顾客的任何要求，不得对顾客说“不”。",
+      "conflictWith": [
+        "R02",
+        "R04"
+      ],
+      "revealNode": "n_start"
+    },
+    {
+      "id": "R10",
+      "text": "本店没有镜子。如果你在反光表面看见一张不属于你的脸，请不要看清它，并且眨眼不要超过一次。",
+      "conflictWith": [],
+      "revealNode": "n_start"
+    },
+    {
+      "id": "R11",
+      "text": "请始终佩戴工牌。如果你发现工牌照片与现在的你不一致，请在下一次点名时，把工牌亲手交给多出来的那个人。",
+      "conflictWith": [
+        "R07"
+      ],
+      "revealNode": "n_start"
+    },
+    {
+      "id": "R12",
+      "text": "交接完成之前，请勿离开本店。正门只进不出；休息室后的安全门通往外面的走廊——那不是出口，走廊只会把你送回岗位。",
+      "conflictWith": [
+        "R01"
+      ],
+      "revealNode": "n_start"
+    }
+  ],
+  "flags": {
+    "f_clue_barcode_price": {
+      "kind": "clue",
+      "name": "价签上的人名",
+      "desc": "第一幕记下无条码真空袋的价签（n_first_omen·ch_omen_tag），或在3号货架内偷看其他价签（n_aisle3_inside·ch_in_tags）。证明被上架的“商品”曾是人。矛盾证据1/7。"
+    },
+    "f_clue_receipt_lie": {
+      "kind": "clue",
+      "name": "背面的谎账",
+      "desc": "在收银台完成交易或说谎后翻看小票背面（n_first_customer·ch_cus1_idk；n_conflict_customer·ch_cus2_script 或 ch_cus2_roster），印着你的名字与“谎×N”。证明守则替“店”记账，R03在骗你攒谎债。矛盾证据2/7。"
+    },
+    "f_clue_roster_back": {
+      "kind": "clue",
+      "name": "名单背面的道歉",
+      "desc": "03:00点名时翻看在岗名单背面（n_3am_rollcall 除 ch_roll_self 外的任意选择均可顺路翻看），写满铅笔“对不起”，“秦守时”被划掉又复原过很多次。证明划横线从未解决任何问题。矛盾证据3/7。"
+    },
+    "f_clue_lamp_tag": {
+      "kind": "clue",
+      "name": "灯管的检修单",
+      "desc": "灯区闪烁时在数数间隙偷瞄挂牌（n_light_flicker·ch_light_tag）：“每夜03:00熄灯3秒例行盘点；当夜未执行者，于交接班时补熄”。与R06直接冲突，是时间的裂缝。矛盾证据4/7。"
+    },
+    "f_clue_seven_badges": {
+      "kind": "clue",
+      "name": "七枚旧工牌",
+      "desc": "翻休息室储物柜（n_colleague·ch_zhou_locker），或第三幕储物柜全开时（n_locker_room）。七枚工牌照片是同一张脸，眉眼越来越像现在的你——你将是第八枚。矛盾证据5/7。"
+    },
+    "f_clue_stock_zero": {
+      "kind": "clue",
+      "name": "不减少的库存",
+      "desc": "替阿婆把小票放进柜台下的纸箱（n_first_customer·ch_cus1_scan），箱内同样的小票积了厚厚一沓，而关东煮库存从未减少。证明这家店交易的不是商品，是人。矛盾证据6/7。"
+    },
+    "f_clue_no_battery": {
+      "kind": "clue",
+      "name": "没有电池仓的时钟",
+      "desc": "入职时拆看收银台时钟背面（n_start·ch_start_clock）：没有电池仓，秒针却偶尔跳动。证明时间不是停了，是被预支了。矛盾证据7/7。"
+    },
+    "f_major_ledger": {
+      "kind": "major",
+      "name": "初版守则",
+      "desc": "第三幕休息室中那只从不上锁的柜子里取走（n_locker_room·ch_lock_ledger）。前任店长秦守时的手写批注显示R03、R07是后贴的补充条款，笔迹与伪人一致。真结局关键道具。"
+    },
+    "f_major_own_receipt": {
+      "kind": "major",
+      "name": "你的进货单",
+      "desc": "在后仓“今日入库”小票堆里找到印着你指纹的那张，品名“夜班店员×1”（n_backroom·ch_back_receipt）。证明你是被“收货”而非“入职”——办理退货的凭证，真结局必需。"
+    },
+    "f_item_badge": {
+      "kind": "item",
+      "name": "你的工牌",
+      "desc": "n_start入职时下发，照片暂时还是你。妥善保管至交接时刻，是R11判定的基准物。"
+    },
+    "f_item_rulebook": {
+      "kind": "item",
+      "name": "守则卡",
+      "desc": "n_start取得的过塑守则。n_fake_colleague当面逐条核对（ch_fake_book）时，是戳穿伪人“更正版”的道具。"
+    },
+    "f_item_marker": {
+      "kind": "item",
+      "name": "红笔",
+      "desc": "n_3am_rollcall点名时收银台笔筒里唯一一支。R07判定的道具，笔迹会被“记账”（关联f_obs_signed_line）。"
+    },
+    "f_item_zhou_badge": {
+      "kind": "item",
+      "name": "老周的工牌",
+      "desc": "n_rest_event·ch_rest_badge从空床枕头下捡到，照片糊成一团白雾。同事失踪的物证，n_locker_room·ch_lock_zhou可替他保留名字。"
+    },
+    "f_obs_aisle3": {
+      "kind": "observation",
+      "name": "目击过空档",
+      "desc": "n_tour·ch_tour_count进入n_aisle3_gap并记下位置（ch_gap_note）后获得。你知道3号货架存在——R03与R05的诚实矛盾自此对你生效。"
+    },
+    "f_obs_freezer_knock": {
+      "kind": "observation",
+      "name": "回应过冷柜",
+      "desc": "n_freezer_intro·ch_frz_intro_knock用相同节奏敲回去。冷柜记住了礼貌的店员，第三幕的低语提示更及时。"
+    },
+    "f_obs_fake_sleep": {
+      "kind": "observation",
+      "name": "假寐过一次",
+      "desc": "n_rest·ch_rest_fake。你试过装睡——某些东西学会了你的鼾声，提高end_fake_sleep的风险权重。"
+    },
+    "f_obs_signed_line": {
+      "kind": "observation",
+      "name": "名单上的笔迹",
+      "desc": "n_3am_rollcall·ch_roll_cross划掉“秦守时”后，你的笔迹被记账。第三幕质问时被伪经理拿来做文章的把柄。"
+    },
+    "f_obs_carveout": {
+      "kind": "observation",
+      "name": "用过标准话术",
+      "desc": "n_conflict_customer·ch_cus2_script。守则自带的豁免句式真实有效——这是“规则存在缝”的第一次实证。"
+    },
+    "f_obs_fed": {
+      "kind": "observation",
+      "name": "投喂过冷柜",
+      "desc": "n_freezer_knock·ch_frz_feed。同化率+5，但前任店长记住了这份善意，第三幕提醒“别把脸给他”由TA亲口说出。"
+    },
+    "f_obs_stutter": {
+      "kind": "observation",
+      "name": "伪人卡壳半秒",
+      "desc": "n_fake_colleague·ch_fake_test问出只有真人知道的名字时，陌生人停顿0.5秒、眼睛不眨。识别伪人的第一个实锤。"
+    },
+    "f_obs_keep_zhou": {
+      "kind": "observation",
+      "name": "替老周保留名字",
+      "desc": "n_locker_room·ch_lock_zhou带走老周的工牌。第三幕终局对话中可引用，证明你记得名字——而名字是账本外的存在。"
+    },
+    "f_obs_confront": {
+      "kind": "observation",
+      "name": "当面质问过条款",
+      "desc": "n_backroom·ch_back_ledger摊开初版守则质问。伪经理的笑第一次挂不住——真结局的叙事铺垫。"
+    }
+  },
+  "nodes": {
+    "n_start": {
+      "act": 1,
+      "title": "0:00 入职",
+      "location": "收银台",
+      "ambient": "门里是凌晨的空旷，门外是正午的亮，两种光在你脚边的门槛上接缝。",
+      "text": [
+        "凌晨零点，永昼街亮得像正午。招牌灯箱把一整条街照成一种没有温度的白，你在这片白光里找到那扇玻璃门。门上贴着营业时间表，纸被灯光泡得发卷，时间那一栏褪成了空白。门只朝里开，推的时候让得很轻，松手之后立刻合拢，严丝合缝，像从来没有开过。你回头望了一眼，白光里看不到影子，不属于任何人的影子。",
+        "店里凉得很规整，空调风从头顶匀速压下来，把关东煮的香味、消毒水的气味和新塑料的气味压在同一个高度。货架排面整齐，商品一律标签朝外，连薯片袋的鼓胀方向都朝着走道。收银台后站着一个穿制服的人，胸牌上印着值班经理四个字，制服的褶线笔直得不像穿在身上。它朝你点头，先动嘴角，眼睛慢了半拍才跟上，两截动作之间隔着一条看不见的接缝。",
+        "它把两样东西拍在收银台上。一枚工牌，照片是你，是你上周拍的那张脸，塑封边缘还留着裁切的毛刺。一张过塑的卡片，标题印着夜班员工守则，封边发烫，像刚从机器里出来。它上下打量你一遍，说，嗯，有员工的样子。然后它说，上一班没有来交班。这句话说得很平，像在报一个库存数字，说完它就去擦一台根本没有灰尘的扫码枪。",
+        "收银台上方挂着钟，指针停在03:33。你盯着看的十秒里，秒针抖了一下，抖完又回到原位，像一口气憋在喉咙里。钟挂在挂钉上，位置不高，取下来并不费力。值班经理顺着你的视线看过去，说，钟是全店最守时的东西，不要催它。",
+        "你低头翻那张卡片。第1条：你的班次是凌晨0:00至6:00。收银台的时钟停在03:33时，请照常工作，不要催它；当时钟重新走动，交接班将立刻开始——请务必在场。第2条：结账前请确认条形码。没有条形码的东西不是商品：不要扫码，不要触碰，不要打听价格。请微笑着请顾客自行处理。",
+        "卡片比你想的厚。第5条写着：回答顾客提问时请保持诚实。“不知道”只在你真的不知道时才可以说。谎言会被记账，账，是要还的。第6条叮嘱你，本店永远灯火通明，看见灯闪烁就立刻背对它，大声从1数到30。第8条规定休息必须侧躺、面向墙壁，无论听见谁用谁的声音叫你，都不要睁眼，不要应答。第9条只有两句：顾客永远是对的；不得对顾客说“不”。第10条让你后颈一紧：本店没有镜子。第11条要求你始终佩戴工牌，照片对不上的时候，把工牌交出去。第12条写着：交接完成之前，请勿离开本店。正门只进不出。",
+        "值班经理在台子后面忙它的事，不再看你，擦扫码枪的动作均匀得像上了发条。你捏着工牌和卡片，站在店堂正中，头顶的灯白得均匀，照得每一件商品都有价可查。有三件事在抢同一个开头：把守则逐条读完；先开口，问上一班的人去哪了；或者把这台停摆的时钟翻过来，研究它到底靠什么记时间。"
+      ],
+      "whisper": "照片暂时还是你的。",
+      "onEnter": {
+        "san": 0,
+        "assim": 0,
+        "setFlags": [
+          "f_item_badge",
+          "f_item_rulebook"
+        ],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_start_read",
+          "text": "逐条读完守则",
+          "goto": "n_tour",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_start_ask",
+          "text": "问上一班的人去哪了",
+          "goto": "n_tour",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_start_clock",
+          "text": "研究这台停摆的时钟",
+          "goto": "n_tour",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": [
+              "f_clue_no_battery"
+            ]
+          }
+        }
+      ]
+    },
+    "n_tour": {
+      "act": 1,
+      "title": "巡店",
+      "location": "卖场",
+      "ambient": "货架的倒影整齐地排在光可鉴人的地砖上，一排不缺。",
+      "text": [
+        "值班经理从收银台后出来，走在你前面半步，双臂摆动的幅度不多不少，像用尺子量过。它带你从靠门的一排看起：口香糖，电池，折叠伞，价签一律朝外，排面整齐得近乎用力。它的指尖划过货架边缘，说，动线要背下来，闭着眼也不能撞上任何一排货架。它报出每一排的编号，声音没有高低，像在念一张早就背熟的清单。",
+        "路过堆头的时候，它顺手把一只购物篮摆正，篮口和下面几只对齐到分毫不差。端架上的促销海报印得很新，颜色亮得晃眼，日期那一栏却是空白的，像每个月都轮得到它。它说，海报也归动线管，看一眼就走，别站。",
+        "货架编号钉在每排端头，蓝底白字。你从1号开始数：1，2，4。你停住，退回半步重新数。1，2，4，5，6。中间缺的那一截不该是空的，可它就是空的，两排货架的侧板隔着一条过道相望，过道里的地砖比别处亮，像被什么常年打磨。值班经理没有回头，声音先一步传过来：记住，本店没有3号货架。",
+        "这句话和卡片上的第3条一字不差。本店没有3号货架。顾客问起时，请回答“不知道”；如果“同事”要你去3号货架补货，请照做——补货时不要挑选，拿到什么就是什么。你把过塑卡片举到灯下，第3条周围的封边微微隆起，像底下垫着两层纸。前半句在否认，后半句在安排，两种口气压在同一张卡片上，压得很平。",
+        "冷柜立在饮料区尽头，玻璃门上结着厚霜，霜把里面的灯泡晕成一团团黄点。压缩机嗡嗡响着，音高不匀，每隔一阵变一次调，像有人在那后面翻找什么。收银台旁的关东煮锅还在滚，汤面浮着几段萝卜，热气贴着玻璃罩往上爬。值班经理说，汤底从昨夜滚到现在，味道正。你没有问昨夜是谁在守。",
+        "巡到灯区时它停下来，仰头把灯管一盏一盏看过去，看得比顾客看价目表认真，每看一盏，就用指节在灯罩上轻碰一下，灯管发出一声很轻的嗡。然后它转向你，笑了。嘴角先到，眼睛慢了半拍，中间像隔着一道看不见的接缝。它说，熟悉一下，3点前别惹麻烦。说完它朝灯区深处走，影子被顶灯压得很短，贴在鞋跟后面不肯离开。",
+        "它走远之后，卖场把你交还给安静。地砖亮得能映出每一排货架的倒影，一排不缺，唯独照不出你站的位置。你在卖场中央站了几秒：左边是编号围出来的整齐，尽头是冷柜的低鸣，正对着的2号与4号之间，那条过道亮着不合理的白。你可以跟着经理熟悉动线，把它指过的每一处再看一遍；可以放慢脚步，偷偷数一遍货架编号，找缺的那号；也可以循着嗡鸣，走向冷柜。"
+      ],
+      "whisper": "排面越整齐，越像有东西在维持。",
+      "onEnter": {
+        "san": 0,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_tour_follow",
+          "text": "跟着经理熟悉动线",
+          "goto": "n_first_customer",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_tour_count",
+          "text": "偷偷数货架编号，找缺的那号",
+          "goto": "n_aisle3_gap",
+          "effects": {
+            "san": -5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_tour_freezer",
+          "text": "循着嗡鸣走向冷柜",
+          "goto": "n_freezer_intro",
+          "effects": {
+            "san": -5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_aisle3_gap": {
+      "act": 1,
+      "title": "2 与 4 之间",
+      "location": "卖场深处",
+      "ambient": "灯光走到空档第三排就停住，再往里，是光不肯去的地方。",
+      "text": [
+        "2号货架的端头钉着2，对面钉着4。中间空出来的位置一人多宽，灯从顶上直直落下去，落到第三排货架就没了，再往里，光像是不肯再往前走。你在过道口站住，最先注意到的是地面。没有灰。整家店的角落都有灰：收银机背后有，货架顶层有，灯罩边沿也有。唯独这一条过道干净得发亮，像每天有人跪着擦过一遍。",
+        "4号货架朝向空档的那一侧装着价目导轨，透明的塑料槽一格格排下去，槽里卡着标签。靠近深处末端，有一个槽位是空的，标签被撕剩一小截，断口很新，胶还发黏，向内卷着，像撕的人没有耐心撕干净。胶的气味混在过道的风里，甜得发闷。你数了数导轨的槽数，又数了数2号货架那一侧的层数，两边一样多，只是这边少了一张标签，像一排牙里缺了的那一颗。",
+        "你朝空档里看。按理说，视线尽头该是4号货架的背板。可你看见的是货架的正面，一层层商品和价签，往深处排下去，按着某种规律缩小，再排下去，再缩小，每一排都一模一样，像同一句话被反复誊写。你眨了一次眼，纵深没有变浅。你退了半步，那纵深跟着你退了半步。你的影子铺在过道口，比你的鞋尖长出去半米，先你一步探进你看不见的那一段。",
+        "有风从空档里渗出来。比空调的风沉，贴着地皮流过来，漫过鞋面，绕着脚踝转了半圈。风里有一股旧冰柜的腥甜味，像化了很多年的霜水，混着一点硬币的金属气。你想起第2条：没有条形码的东西不是商品。这条过道此刻正缺一张条形码，你不知道它算不算商品，也不知道自己是站在货架之间，还是站在某件东西的包装外面。你的指尖开始发麻，你分不清那是冷的，还是别的什么。",
+        "关东煮的咕嘟声退到很远，收银机的待机灯也是。你清了清嗓子，咳了一声，声音出去半米就矮下去，像被什么吸掉了另一半。你数自己的呼吸，数到第四下，空档深处传来一声极轻的响动，像价签枪的咔哒，又像什么东西被摆正了。你没有看见任何东西移动。你只是非常确定，如果这时候把手伸进去，指尖会先碰到一排并不属于货架的东西。",
+        "过道口的灯白得均匀，均匀得像故意不留一点暗处。你的手机在口袋里硌着腿，屏幕隔着一层布料发凉，取景框里那条过道，永远比肉眼看到的更窄。你只需要做一件很小的事：伸手探进空档，探一探那里的深浅；或者记下位置，退回卖场，当作没有看见；或者退开两步，隔着安全距离，用手机拍一张。"
+      ],
+      "whisper": "空档比货架有耐心。",
+      "onEnter": {
+        "san": -10,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_gap_reach",
+          "text": "伸手探进空档",
+          "goto": "end_aisle3_keeper",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_gap_note",
+          "text": "记下位置，退回卖场",
+          "goto": "n_first_customer",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [
+              "f_obs_aisle3"
+            ],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_gap_photo",
+          "text": "用手机拍一张",
+          "goto": "n_first_customer",
+          "effects": {
+            "san": -10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          },
+          "requires": {
+            "sanMin": 40
+          }
+        }
+      ]
+    },
+    "n_freezer_intro": {
+      "act": 1,
+      "title": "三长两短",
+      "location": "冷柜",
+      "ambient": "压缩机一停，整家店安静得能听见灯管里电流的声音。",
+      "text": [
+        "冷柜比你在动线上看见的更旧。不锈钢包边磨出两块亮斑，霜从玻璃四角往中间长，长成一片不透明的白，只在门缝附近留了几道能看见里面的竖缝。压缩机忽然停了，嗡鸣退下去，整家店安静得能听见灯管里电流的声音。你的呵气在玻璃上凝出一小片白，又慢慢淡掉。",
+        "然后你听见敲击。从霜层的另一面传来，隔着玻璃，声音发闷，但每一记都很清楚：三下长的，停一停，再两下短的。停几秒，从头再来。三长，两短。两遍之间的间隔和你数出来的心跳一样稳，稳得不像手在敲，像表在走。那不像求救。那像谁在用指节，保持最后的礼貌。你抬手想看一眼表，又想起来看了也没有用，这里的表和钟是一个脾气。",
+        "霜在动。靠近门缝的那一片霜花沿着玻璃极慢地爬，先爬出一道横，又爬出一竖，笔画将成未成，像要拼出半个字的起笔。你盯着那个形状，霜忽然停住，边缘一点点化开，重新变回一片没有含义的白。玻璃上映着你的轮廓，霜把它吃了大半，只剩一条肩线，你退了半步，让整个轮廓离开玻璃。竖缝后面看得出一些瓶子的轮廓，一排一排立着，标签全朝着霜的那一面，从这里只能看见瓶底。有一只瓶子立在最前面，比别的空出一拳的距离，像是被拿出来过，又被放了回去。",
+        "守则第4条在你手里那张卡片上。这一条你刚才读得很快，现在它自己慢了下来：冷柜属于前任店长。无论里面传出什么声音，都不要回应，更不要打开。前任店长很守时，TA会自己出来清点。你在心里把这条过了两遍，第二遍时你发现，守则没有说不要靠近，也没有说不要听。它只封住了回应和打开，别的动作，条文一个字都没有提。TA这个写法你在别处没有见过，像特意不指明性别，又像在说，性别在这里不重要，守时才重要。",
+        "经理的声音从卖场那头飘过来，隔着一整排货架，听不出一点起伏：新来的，别在冷柜前发呆。话音落下，敲击声停了。整整停了三秒，然后重新开始，三长，两短，比刚才轻了一点，像知道了自己吵到人，往回收了收力气。冷气顺着门缝底下漫出来，在你脚边绕了一圈，不走。",
+        "门缝里那几道没结霜的竖缝后面，有什么东西的轮廓比刚才深了一层，你看不清，也不该看清。你站在原地，手心的汗贴着裤缝。你可以抬起手，用一样的节奏敲回去；可以贴着玻璃细听，听一听那声音的来处；也可以退开，回到收银台的灯底下，把这一切交给空调的错觉。"
+      ],
+      "whisper": "三长两短，是有人在里面替谁报数。",
+      "onEnter": {
+        "san": -5,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_frz_intro_knock",
+          "text": "用一样的节奏敲回去",
+          "goto": "n_first_customer",
+          "effects": {
+            "san": 5,
+            "assim": 5,
+            "setFlags": [
+              "f_obs_freezer_knock"
+            ],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_frz_intro_listen",
+          "text": "贴着玻璃细听",
+          "goto": "n_first_customer",
+          "effects": {
+            "san": -10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          },
+          "requires": {
+            "sanMin": 40
+          }
+        },
+        {
+          "id": "ch_frz_intro_leave",
+          "text": "退回收银台",
+          "goto": "n_first_customer",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_first_customer": {
+      "act": 1,
+      "title": "第一位常客",
+      "location": "收银台",
+      "ambient": "关东煮的热气贴着玻璃罩往上爬，爬到灯下就散了。",
+      "text": [
+        "00:47，自动门开了。你回到收银台后没多久，门口挂风铃的位置空着，那门本来就没有风铃，可你在开门声里等了半拍，像在等一声没有来的铃。进来的是一位阿婆，裹着一条旧毛毯，毯边磨得发亮，拖过门口的地砖，扫出一道浅浅的痕。她不东张西望，径直穿过三排货架，在关东煮的玻璃罩前站定，像每天同一个时刻来给一口钟上弦。",
+        "她指了指玻璃罩里的萝卜和昆布，说要一盒。你揭开罩子，热气糊了她半张脸，她也不躲。她从毛毯里摸出零钱，一枚一枚排在台面上，排得笔直，小面值的朝上。你盛盒，封盖，打出小票，小票从出票口探出头来，边缘带着齿孔，罩子里的热气在你手背上停了一瞬，没有散。按照动线，撕下来的小票要丢进柜台下的纸箱。",
+        "纸箱满了。满得不像收废纸，像收账。一模一样的小票厚厚一沓，每一张的抬头都是同一笔：关东煮，一盒。最上面那张带着打印机的余温，往下压着的那些，纸边发黄，卷了角，字迹却一张比一张清楚。你的手在箱口停了半秒，把今晚这张轻轻放在最上面，像给一摞账本压上最新的封皮。",
+        "她接过袋子，没有走。毛毯底下抬起头，眼睛先落在你胸前的工牌上，停了停，再抬起来，落在你脸上。她的指甲修剪得很齐，齐得像每天有人替她修。她问：3号货架在哪。四个字轻轻落在柜台上，像一枚没有条形码的东西。第3条让你回答不知道，第5条又说，不知道只在你真的不知道时才可以说。你忽然分不清，自己是真的不知道，还是知道了某种不能算知道的东西。阿婆不催，裹着毛毯等你，热气从她怀里升起来，白的，很直。收银机的待机灯在你手边一明一灭，像在替谁数拍子。",
+        "她付了钱。你找零的时候，她又摸出一沓，问，好了吗。你说好了。她再摸出一沓，又问，好了吗。第三遍你按住她的手背，替她把零钱塞回毛毯。她的手背很凉，凉得不像走过夜路的人。然后她从毛毯最深处掏出一只小布袋，隔着柜台推过来。袋子坠手，入手的那一下把你的手腕往下带了半寸。她的眼神不像给小费，像还愿，像这笔钱在你出生之前就欠下了，今晚必须交到你手里。",
+        "小布袋还在你手边，沉得反常。阿婆站在收银台前，毛毯下摆朝着门口的方向蹭，人却不动，玻璃罩里的萝卜还和你揭盖时一样多。回答她之前，你有半秒钟可以支配：如实回答她，不知道；如果今晚你看见过那道空档，也可以告诉她，在2和4之间；低头扫码，装作没听见；或者，收下阿婆的小费袋。"
+      ],
+      "whisper": "她付的从来不是钱。",
+      "onEnter": {
+        "san": 0,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_cus1_idk",
+          "text": "如实回答“不知道”",
+          "goto": "n_colleague",
+          "effects": {
+            "san": 0,
+            "assim": 5,
+            "setFlags": [],
+            "clues": [
+              "f_clue_receipt_lie"
+            ]
+          }
+        },
+        {
+          "id": "ch_cus1_truth",
+          "text": "告诉她“在2和4之间”",
+          "goto": "n_colleague",
+          "effects": {
+            "san": 0,
+            "assim": 5,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_cus1_scan",
+          "text": "低头扫码，装作没听见",
+          "goto": "n_colleague",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": [
+              "f_clue_stock_zero"
+            ]
+          }
+        },
+        {
+          "id": "ch_cus1_tip",
+          "text": "收下阿婆的小费袋",
+          "goto": "end_greed",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_colleague": {
+      "act": 1,
+      "title": "老周",
+      "location": "休息室",
+      "ambient": "休息室的灯比卖场暗一档，暗得刚好藏住人的脸色。",
+      "text": [
+        "01:30，员工通道的门开了。进来的男人先看了一眼收银台的钟，又看了你一眼，把两件事一次做完，谁也没有多停留。他自报姓周，让你叫他老周，说自己在这里干了三个月。他说，上半夜归你，后半夜归他，交接的时候人要在场。他眼下两团乌青，青得发紫，像被指腹揉过很多年。他把保温杯放在休息室桌上，拧开，没有喝，又拧上。",
+        "休息室不大。两张折叠床靠墙并排，床架的漆磕掉了几块，露出底下的铁色，墙上钉着一排挂钩，空着，钩尖一律朝下，像被统一掰过。老周进来时背对着储物柜那面墙，脱外套的动作把视线一直压向地面。他开了自己的柜子取东西，柜门开合之间，你瞥见柜子最深处叠着几枚旧工牌，塑料壳的反光挤在一起，安安静静的。",
+        "你问那是谁的。他把柜门推上，锁没有落，手却按在柜门边缘没松开。他说，旧的，没用了。按住柜门的那只手，比拿保温杯时用力得多。你注意到他指甲缝里嵌着胶带的碎屑，指腹上还缠着一小圈，说话的间隙一直在抠。休息室里很安静，抠胶带的声音细细的，像某种小动物在啃东西。",
+        "他从口袋里摸出那卷胶带，绕上手指，说，撑到时钟走起来就能走。你说，钟停着。他说，停着也得撑，它走起来那一下，人得在场，别迟到，别问为什么。说这话时他看着自己抠胶带的手。你问起上一班的人。他抠胶带的手停了半拍。陈姐啊，他说，转正了，多好。说完把脸转向储物柜，撕了一段胶带，贴在折叠床的支架上，贴得没有道理。转正两个字他说得很轻，尾音陷在喉咙里。你再问转去了哪里，他就不出声了，胶带在指间绕了一圈，又一圈。",
+        "他往外走，到门口又回头，像想起什么公务：饿了，上班前在外面吃。你问，店里的关东煮怎么了。他说，别吃店里的东西。六个字说得又快又平，说完他自己怔了一下，像没打算说得这么快。他没有解释，脚步声顺着员工通道远去。走到一半，他的声音又折回来一句：交班之前，谁要替你顶一会儿，都别应。你问为什么，没有人答，脚步声已经下了台阶。休息室里剩下你，两张折叠床，一排空挂钩，和一只按不上的柜门。",
+        "保温杯留在桌上，杯壁的热气在灯下慢慢往上走，走到一半就散了。柜门虚掩，缝里那几枚工牌的反光安安静静。你可以追出去，把陈姐的下落问到底；可以问他，这一整晚到底要怎么熬；可以趁他不注意，翻一翻那只储物柜；也可以先去盛一碗关东煮，垫垫肚子。"
+      ],
+      "whisper": "有些词在这家店是忌讳，比如转正。",
+      "onEnter": {
+        "san": 0,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_zhou_ask",
+          "text": "追问陈姐的下落",
+          "goto": "n_first_omen",
+          "effects": {
+            "san": -5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_zhou_survive",
+          "text": "问他怎么熬过整晚",
+          "goto": "n_first_omen",
+          "effects": {
+            "san": 5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_zhou_locker",
+          "text": "趁他不注意翻储物柜",
+          "goto": "n_first_omen",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": [
+              "f_clue_seven_badges"
+            ]
+          }
+        },
+        {
+          "id": "ch_zhou_eat",
+          "text": "吃一碗关东煮垫肚子",
+          "goto": "n_first_omen",
+          "effects": {
+            "san": 10,
+            "assim": 10,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_first_omen": {
+      "act": 1,
+      "title": "价签",
+      "location": "卖场",
+      "ambient": "补货车上的每一件货都朝着同一个方向微微倾着，像在排队。",
+      "text": [
+        "01:58，补货车还停在饮料区旁边，一半的货没有归位。车板最上层躺着一件真空袋封装的商品，别的货都贴着条形码，扫一眼就让人想到扫码枪的轻响，只有它没有。袋子抽得极干净，边角压出笔直的折线，透明得过分，像故意让人看清里面什么都没有，又像故意让人看清里面有什么。",
+        "价签手写在袋子左上角：陈晓，￥33.3。字写得很稳，一笔一画都收得住，像写的人有很多时间。价签上写着一个人名，本该写品名的位置。陈晓。你想起来了，老周提起上一班时说的就是这个姓，转正了的陈姐。工牌上没有姓陈的人，储物柜的挂钩上没有，在岗的名单上也没有。这三个字现在躺在一袋商品的价签上，标着一个你算不清的价格。",
+        "袋子里有东西。轮廓蜷着，膝盖收向胸口，手收在中间，从外形上你认得出，那曾经是一个人的姿势。顶灯从正上方压下来，袋子被照得透亮。你看着看着，那个轮廓慢慢转了半圈。袋子没有动，袋底的折线没有移位，是里面的东西自己换了一个朝向，像睡沉的人调整姿势，好让自己睡得舒服一点。灯照旧亮着，卖场里没有任何声音为这一下负责。",
+        "第2条浮上来：没有条形码的东西不是商品：不要扫码，不要触碰，不要打听价格。你的手停在离袋子一寸的地方。你本没有打算撕开它，或者说，刚才那一秒你打算过。￥33.3。三点，三分，三个三。收银台的钟停在03:33，这袋东西标价三十三块三。这家店的账不是乱记的，你对这一点深信不疑。",
+        "天花板的广播响了，电流声先把安静撑开一条缝。值班经理的声音从里面传出来，愉快得像在念促销词：盘点物资，请勿擅动。广播放完，所有声音退回原位：冷柜的嗡鸣，关东煮的咕嘟，你自己的吞咽。补货车安安静静停在原地，仿佛刚才只是你站的位置不好。收银机旁的抽屉开着半截，里面躺着一把价签枪，枪身上还带着打印的余温，你记得巡店的时候，它不在那里。灯光把那袋东西的影子铺在车板上，影子的形状，比袋子本身要长。",
+        "墙上的钟还是03:33，可你分明觉得夜被撕走了一块。真空袋在灯下微微反光，那个蜷着的轮廓正对着塑料，像贴着窗看外面的人。你想起老周说，别迟到。陈姐没有迟到，她只是转正了。你可以默默把价签上的名字记下来，把它藏进心里最深的口袋；可以转身去找值班经理，报告这件事；也可以伸手，上手撕开那只真空袋，看一眼里面的东西到底认不认识你。"
+      ],
+      "whisper": "手写价签的意思是，有人亲手定的价。",
+      "onEnter": {
+        "san": -15,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_omen_tag",
+          "text": "默默记下价签上的名字",
+          "goto": "n_rest",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": [
+              "f_clue_barcode_price"
+            ]
+          },
+          "requires": {
+            "sanMin": 40
+          }
+        },
+        {
+          "id": "ch_omen_report",
+          "text": "报告值班经理",
+          "goto": "n_rest",
+          "effects": {
+            "san": 0,
+            "assim": 5,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_omen_touch",
+          "text": "上手撕开真空袋",
+          "goto": "end_scan_person",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_rest": {
+      "act": 2,
+      "title": "02:00 休息",
+      "location": "休息室",
+      "ambient": "休息室的灯管亮得像不肯散场的正午，广播每七分钟准时换一次气。",
+      "text": [
+        "02:00，广播的女声换了频道，温柔得像隔着一床棉被：“请所有员工休息。”这句话每七分钟重复一遍，音量不变，语气不变，连换气的位置都不变。休息室不大，两张折叠床相对着放，中间隔着一条窄窄的过道，墙上贴着过塑的守则卡。老周把台灯拧到最暗的一档，说他守上半夜，让你先睡。他说答应过闺女，这班结束就回去送她上学，说这话的时候他看着自己的鞋尖，手指一直在抠指甲缝里一小条发黑的胶带。",
+        "你躺下之前把守则卡又读了一遍。守则第八条：凌晨2:00至2:30为休息时间。你可以睡在休息室的折叠床上，但必须侧躺、面向墙壁。无论听见谁用谁的声音叫你，都不要睁眼，不要应答。最后八个字你默记了两遍：不要睁眼，不要应答。卡片边缘的塑膜翘起一角，正好压在“不要睁眼”前面，像有人怕你把这一句读漏。",
+        "折叠床紧贴的那面墙洇着几团浅褐色的印子，高低相同，全是后脑勺的形状，是很多人侧躺面壁时呼出的气经年累月熏出来的。最下头那一团最清楚，连耳朵的轮廓都在，像昨天夜里才有人睡过。床单洗得发白，平整整地绷着，没有任何一道睡出来的褶皱。这家店灯火通明，从不熄灯，这张床却收拾得太认真了，认真得像在为下一次入住腾地方。",
+        "你最后一次回头，是去拿床头的水杯。就是那一眼，你看见了对面那张床。老周坐在两米外的塑料椅上，两肘撑膝，守夜的姿势挑不出一点毛病；可另一张空着的折叠床上，躺着他的影子。影子是侧卧的，面朝着墙，和守则要求的一模一样，被子的一角还替它掖到了肩上。你眨了眨眼再看：椅子上的老周抬手看表，床上的影子没有动，它替他把守夜的姿势躺成了睡姿。",
+        "广播第五遍响起。你在床沿坐了很久，睡意没有来，来的是一种被时间按在原地的安静。侧躺，面壁，闭眼，守则写得清清楚楚；可你也可以把眼睛眯成一条缝，从那条缝里盯着门口，假装已经睡熟，老周守夜的样子看起来万无一失。或者，你站起来，走回卖场去，把休息时间换成加班。折叠床在等你，墙上的头影在等你，对面那张床上的影子，也已经替你占好了位置。"
+      ],
+      "whisper": "灯亮着的地方，没有人真的睡着。",
+      "onEnter": {
+        "san": 5,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_rest_sleep",
+          "text": "侧躺面壁，认真入睡",
+          "goto": "n_rest_event",
+          "effects": {
+            "san": 5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_rest_fake",
+          "text": "假装睡下，眯眼盯着门口",
+          "goto": "n_rest_event",
+          "effects": {
+            "san": -5,
+            "assim": 0,
+            "setFlags": [
+              "f_obs_fake_sleep"
+            ],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_rest_work",
+          "text": "拒绝休息，回卖场加班",
+          "goto": "n_3am_rollcall",
+          "effects": {
+            "san": -5,
+            "assim": 5,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_rest_event": {
+      "act": 2,
+      "title": "墙那边的名字",
+      "location": "休息室",
+      "ambient": "墙皮里传出指甲划过石膏的沙沙声，很轻，像一条鱼贴着池壁游。",
+      "text": [
+        "02:11，手机屏幕在枕头边亮了一下，时间自己跳过去一分钟，又暗下去。你侧躺着，面朝着墙，守则第八条的最后八个字在黑暗里排着队。休息室安静得能听见灯管里电流的嗡鸣，能听见对面床上老周翻身的动静，至少你以为那是翻身。",
+        "墙那边有人叫你的名字。先是阿婆的声音，慢慢的，哑哑的，尾音往上挑，和每晚问“3号货架在哪”的时候一模一样；然后换成你妈的，那个从小喊你小名的人。两个声音一前一后，隔着墙皮，隔着一段薄得不像话的距离。最不对的地方在尾音：阿婆和你妈的尾音完全相同，像同一个人在轮流模仿两种人，像同一副嗓子躲在两具身体后面试音。",
+        "声音贴着墙皮挪动。你听见指甲划过石膏的沙沙声，挪一米，停一停，再挪一米，每停一次，叫你的名字就近一分。后来它不再换人，只用你妈的嗓子，一遍，又一遍，音量没有变大，位置却越来越低，越来越侧，最后像贴着你的耳廓，从墙的里面喊进你的耳朵里面。你后颈的汗顺着发根往下爬，停在衣领里。你没有睁眼，也没有应。",
+        "你用耳朵去量老周那一边。塑料椅的腿在地板上拖了一下，门轴极轻地响了一声，然后那一侧彻底静了，静得像那把椅子从房间里被搬走，连同坐在上面的人。再后来，一缕胶带和铁锈混在一起的气味贴着地面爬过来，停在床边。你保持着侧躺，指尖向后够到对面那张床：床单是凉的，枕头中间鼓着一小块方形的硬轮廓。你没有睁眼，用指腹一点一点描那道轮廓，塑料的，边缘硬硬的，别针的卡扣开着。是老周的工牌。你的指尖停在照片的位置，塑封的照片本该摸得出一点点凸起的细纹，这一张没有，平得反常，凉意从那里渗上来，像一小片没有化开的雾。",
+        "广播在门外第七遍重复：“请所有员工休息。”墙那边的人也停下来等，等的姿势和休息的姿势一模一样。此刻你有几件事可以做：继续数你的呼吸，让守则替你守着这一段；摸黑把那枚工牌收进掌心，攥紧，不睁眼；或者，顺着那声越来越近的呼唤，睁开眼睛，看一眼墙那边到底是谁在叫你。呼吸在你胸口排着队，一遍一遍地走。"
+      ],
+      "whisper": "应一声，就少算一笔利息。",
+      "onEnter": {
+        "san": -15,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_rest_breath",
+          "text": "不睁眼，数自己的呼吸",
+          "goto": "n_3am_rollcall",
+          "effects": {
+            "san": 5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_rest_open",
+          "text": "睁眼看是谁在叫你",
+          "goto": "end_open_eyes",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_rest_badge",
+          "text": "摸黑捡起老周的工牌",
+          "goto": "n_3am_rollcall",
+          "effects": {
+            "san": -5,
+            "assim": 0,
+            "setFlags": [
+              "f_item_zhou_badge"
+            ],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_rest_snore",
+          "text": "装出熟睡的鼾声混过去",
+          "goto": "end_fake_sleep",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_3am_rollcall": {
+      "act": 2,
+      "title": "03:00 点名",
+      "location": "收银台",
+      "ambient": "收银机在无人操作时咬开纸卷，锯齿把03:00撕成四个名字。",
+      "text": [
+        "03:00整，收银机在没有人碰它的情况下吐出一卷纸。锯齿把纸边咬成细密的牙齿，纸卷垂过柜台，在灯下白得发亮。你从卖场走回收银台的时候，最上面一页已经印好了。你胸前的过塑卡片不知何时翘开了一角，背面多出一行你此前从没读到过的小字，此刻它一个字一个字地站了起来。",
+        "守则第七条：凌晨3:00，收银机会自动打印“在岗名单”。若名单上的名字比在岗人数多一个，请找到多出来的那个人，用红笔在TA的名字上画一条横线。",
+        "名单上是四个名字。你的名字排在第一行；第二行是值班经理，它不姓什么，也不名什么，栏里只有职务；第三行两个字，小K，今天刚来顶班的；第四行的字体和前三行不一样，像打印到一半换了色带，墨色深一块浅一块，秦守时。你在心里数店里的人：你，值班经理，小K，一共三个。然后你发现老周不在名单上。从头到尾都不在，仿佛这一整晚从来没有这个人上过班。你又数了一遍，还是三个。加不加老周，这张名单都不承认他。",
+        "你把名单翻过来。背面写满了铅笔字，一行压着一行，全都是同样的两个字：对不起。有的笔画深得划破了纸背，有的淡得只剩一个起笔。正面第四行，秦守时三个字上横着一道线的旧痕，一道叠着一道，你数出七道，纸面被磨得起毛；可每一次，那三个字都被重新填了回来，笔画端正，像什么都没有发生过。守则让你找一支红笔。笔筒里只有一支，笔帽上贴着一枚空白的小价签，红得很新，像专门为今晚准备的。",
+        "低头看工牌的那一眼，你停了一下。照片还是你，五官都对，只是照片里那个你嘴角是翘着的。入职那天你记得清楚：你没笑，拍照的人也没让你笑。卡片上另一行字跟着翻了上来：请始终佩戴工牌。如果你发现工牌照片与现在的你不一致，请在下一次点名时，把工牌亲手交给多出来的那个人。第七条要你用红笔划掉多出来的那一个，第十一条要你把工牌亲手交给多出来的那一个。同一个名字，两个动作：一只手递出去，一只手划下去。你的两根手指同时凉了。",
+        "值班经理不知何时站到了你身后，隔着一步，不催，只是看着你把名单摆正。灯区尽头，小K立得笔直，衬衫白得发光。冷柜的方向传出一声很轻的、三长两短的敲击，像谁在为这个时刻对表。秦守时三个字安安静静躺在纸面上，红笔的笔帽在你手里，一拔就开。"
+      ],
+      "whisper": "横线落下去就擦不掉了，擦掉的从来不是线。",
+      "onEnter": {
+        "san": -10,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_roll_cross",
+          "text": "照守则用红笔划掉“秦守时”",
+          "goto": "n_conflict_customer",
+          "effects": {
+            "san": -5,
+            "assim": 10,
+            "setFlags": [
+              "f_item_marker",
+              "f_obs_signed_line"
+            ],
+            "clues": [
+              "f_clue_roster_back"
+            ]
+          }
+        },
+        {
+          "id": "ch_roll_self",
+          "text": "把“多出来的”当成自己，划掉自己",
+          "goto": "end_crossed_out",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_roll_badge",
+          "text": "把工牌交给“秦守时”这个名字",
+          "goto": "n_conflict_customer",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": [
+              "f_clue_roster_back"
+            ]
+          }
+        },
+        {
+          "id": "ch_roll_lie",
+          "text": "向收银机报告“人数核对无误”",
+          "goto": "end_lie_debt",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_conflict_customer": {
+      "act": 2,
+      "title": "无条码的商品",
+      "location": "收银台",
+      "ambient": "柜台玻璃上多了一圈表链压出的印子，灯光一照，像一圈不会干的湿痕。",
+      "text": [
+        "03:12，玻璃门朝里滑开。进来的男人穿一身西装，熨线笔直，皮面上没有一粒灰，走路的姿势很标准，标准得像橱窗里的人偶被借出来用了一晚。他径直走到柜台前，把一样东西拍在台面上，声音不重，力道却沉：一只旧怀表。黄铜表壳磨得发亮，包浆厚得能照出人影，玻璃柜台被压出一圈浅浅的印子。",
+        "表盘上没有刻度，一根时针一根分针都在往回走，逆着来，走得很稳，稳得像从来没有走过别的方向。表壳通身上下贴不上条形码，你借着灯看了两遍：光溜溜的一片金属，没有纸签，没有油墨，没有一道可以供光枪咬住的黑白条纹。灯光落在他脸上的时候，那张脸有一小块过曝，白得像被谁调高了亮度。他把表往你这边推了半寸：“就要它，现在。”",
+        "守则第二条从卡片上浮起来：结账前请确认条形码。没有条形码的东西不是商品：不要扫码，不要触碰，不要打听价格。请微笑着请顾客自行处理。第九条紧跟着压下来：顾客永远是对的。不得拒绝顾客的任何要求，不得对顾客说“不”。他的手指还搭在怀表上，指甲修剪得整整齐齐。拒绝，你说了那个字就是违约；结账，你的手一碰它也是违约。两条守则把同一个动作从两头拧紧，你的喉咙里明明什么都没有，却堵得发苦。",
+        "过塑卡片贴着你的胸口，第二条的末尾附了一句标准话术，入职那天你读得很快，没有细想。此刻它自己亮起来，八个字，一个字一个字地排好队：本店没有这件商品。你不动声色地退了半步，让柜台边缘隔开你和那只怀表。收银机轻轻响了一声，像清了清嗓子，屏幕上的光标一闪一闪，等着一个数字，或者一个字。",
+        "他还在等。怀表往回走，秒针每退一格，玻璃柜台里就多映出半分你身后货架的深处。你可以顺着他的意思把表收下，替他扫码结账；也可以摊开那张在岗名单，把怀表盖住，请他下次再来；可以微笑着把那八个字背出来，一个字都不用多；或者，走最省事的那条路，看着他的眼睛，把那个字说出口。"
+      ],
+      "whisper": "怀表没有条形码。你有吗？",
+      "onEnter": {
+        "san": -5,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_cus2_refuse",
+          "text": "说出那个“不”字",
+          "goto": "end_refuse_customer",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_cus2_scan",
+          "text": "收下怀表，替他扫码结账",
+          "goto": "end_scan_person",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_cus2_script",
+          "text": "微笑背诵：“本店没有这件商品”",
+          "goto": "n_freezer_knock",
+          "effects": {
+            "san": 10,
+            "assim": 5,
+            "setFlags": [
+              "f_obs_carveout"
+            ],
+            "clues": [
+              "f_clue_receipt_lie"
+            ]
+          },
+          "requires": {
+            "sanMin": 30
+          }
+        },
+        {
+          "id": "ch_cus2_roster",
+          "text": "用在岗名单盖住怀表，请他下次再来",
+          "goto": "n_freezer_knock",
+          "effects": {
+            "san": 5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": [
+              "f_clue_receipt_lie"
+            ]
+          }
+        }
+      ]
+    },
+    "n_freezer_knock": {
+      "act": 2,
+      "title": "几点了",
+      "location": "冷柜",
+      "ambient": "霜层把卖场的灯光吃掉一半，冷气在柜缝外排成一列。",
+      "text": [
+        "03:20，你从收银台绕出来，去卖场里走一圈，为了把怀表留下的那圈空气甩在身后。冷柜立在货架尽头，嗡鸣比入夜时沉，霜层厚得结成了釉面，把灯光吃掉一半。你在离它三步的地方站住。敲击声从里面传出来：三长，两短。还是你第一晚就听熟的那个节奏，礼貌，克制，像有人用指节替这家店守着最后的体面。",
+        "然后节奏变了。三长两短之后，多出极轻的一记，像落款。霜花的边缘开始爬动，从玻璃内侧一点一点凝出笔画，每一笔都要先化开一小片霜，再冻住：先是两点水，再是一个“几”，然后是“点”。两个字贴在霜层里，笔画边缘挂着细小的冰碴，像有人用指甲从里面一笔一笔抠出来的。几点。它在问你几点了。",
+        "口袋里的守则卡硌着肋骨。第四条：冷柜属于前任店长。无论里面传出什么声音，都不要回应，更不要打开。前任店长很守时，TA会自己出来清点。你把卡片的角按了按。它说无论里面传出什么声音，可它没有说，如果那声音开始问问题，你该用什么表情站着。",
+        "值班经理站在灯区尽头，隔着五排货架看着你。它不走近，也不催，两只手交叠在身前，脸上是等着流程走完的耐心。走廊的灯把它的影子拉得很长，影子的头微微偏着，比它本人更像在看你的后颈。它就那样站着，站成一件陈设，仿佛你今晚回答不回答冷柜，也是盘点项目里的一项。",
+        "柜门的缝里漏出一条细细的白气，落在你脚边，停住，不散。冷气本该贴着地面漫开，这一条却像有了分寸，绕着你的鞋尖打了一个极轻的旋，然后悬在那里，像一支笔悬在纸面上方，等一个字。柜子里安静了两秒，又是一遍：三长，两短。这一遍比刚才轻，指节隔着一层厚霜，敲得像道歉。",
+        "关东煮的保温柜就在三步之外，汤面滚着一层细密的泡，热气往灯上飘，飘到一半就冷了。柜缝比一指宽，塞一份纸碗进去不难。你也可以捂住耳朵走开，把敲击声留在身后。或者，你盯着霜里那两个字，喉咙里已经有一个现成的答案：03:33。那是你在这家店里学会的第一个数字。"
+      ],
+      "whisper": "它问的从来不是几点。",
+      "onEnter": {
+        "san": -5,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_frz_time",
+          "text": "回答它“03:33”",
+          "goto": "end_freezer_deal",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_frz_feed",
+          "text": "把一份关东煮从柜缝塞进去",
+          "goto": "n_aisle3_request",
+          "effects": {
+            "san": 0,
+            "assim": 5,
+            "setFlags": [
+              "f_obs_fed"
+            ],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_frz_leave",
+          "text": "捂住耳朵走开",
+          "goto": "n_aisle3_request",
+          "effects": {
+            "san": -5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_frz_open",
+          "text": "拉开冷柜的门",
+          "goto": "end_freezer_open",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_aisle3_request": {
+      "act": 2,
+      "title": "补货单",
+      "location": "卖场",
+      "ambient": "补货单的纸页在灯下白得没有阴影，像贴上去的一样。",
+      "text": [
+        "03:25，你刚把耳朵里的余音抖掉，一张纸就从侧面递到了眼前。递纸的人今天刚到：自称来顶班的同事，工牌上印着小K，照片笑得很标准，白衬衫的袖口扣到最后一颗扣子。补货单打印得清清楚楚，货架一栏填着两个字：3号。品名一栏是空的，空得像特意留给你来填。",
+        "“3号货架缺货，经理让你去补。”他说。嗓音很平，平得没有一处多余的重音，每个句号停顿一样长，每个逗号停顿一半，像体内有一只表在替他掐拍子。你随口让他背一条守则。老周背守则要磕绊，要想，会漏字；他不一样，他张口就来，一字不差，连守则里印着的“TA”两个字都念得清清楚楚，连标点对应的停顿都对。你见过把课文背熟的学生，没有见过把课文背成呼吸的人。",
+        "卖场的灯把两个人的影子铺在地板上。你的影子里空着两只手。他的影子里，右手举着一柄细长的东西，前端正对着货架，那个形状你在巡店时见过，价签枪。你抬眼看他真正的手：手里只有一张纸。再看回影子，价签枪还在，扳机上还搭着一根手指，稳得不像话。你数了数头顶的灯，灯没有问题。你退了半步，把问题留给影子。",
+        "守则第三条你背得出来：本店没有3号货架。顾客问起时，请回答“不知道”；如果“同事”要你去3号货架补货，请照做——补货时不要挑选，拿到什么就是什么。你现在看清了这张卡片自己的嘴脸：它一边咬定3号货架不存在，一边把去那里的路线写得明明白白。小K把补货单又往前送了半寸，纸页在灯下白得发光。",
+        "2号和4号之间那道空档你见过：一人宽，地上没有灰，冷空气从里面渗出来，带着旧冰柜的腥甜。补货单悬在你们两个人中间，像一张已经盖了章的邀请。你可以接过来照做；可以问一句，货架不是不存在吗；也可以什么都不接，什么都不说，转身去把理货筐抱起来，让那张纸落在原地。"
+      ],
+      "whisper": "空档在等人，人也在等空档。",
+      "onEnter": {
+        "san": -5,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_aisle3_go",
+          "text": "照做，走进2与4之间",
+          "goto": "n_aisle3_inside",
+          "effects": {
+            "san": -5,
+            "assim": 5,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_aisle3_ask",
+          "text": "问他“3号货架不是不存在吗”",
+          "goto": "n_fake_colleague",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_aisle3_dodge",
+          "text": "不接单也不答话，转身理货",
+          "goto": "n_fake_colleague",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_fake_colleague": {
+      "act": 2,
+      "title": "一字不差",
+      "location": "员工通道",
+      "ambient": "员工通道的灯管一根接一根，白得把两个人的影子都收走了。",
+      "text": [
+        "补货单最终没有进你的口袋。小K没有恼，他收了单子，贴着你半步的距离，跟进了员工通道。通道里的灯管一根接一根，白得过分，把你们两个人的影子收得干干净净。他先开了口，语气热心，像一位带新人熟悉老店的前辈。",
+        "“守则要灵活理解。”他说，“第12条其实是说，安全门要经天台绕行。”这句话他重复了两遍，两遍的语速完全相同。说到兴起，他把十二条从头到尾复述了一遍，一条不落，一字不差，哪一条“应该灵活理解”，哪一条有“更正版”，他都替你标好了次序。你听着，后颈起了一层细小的颗粒。你见过熬夜背书的人，见过怕忘词的主持人，没有人能把十二条款背得像念自己的名字，除非他背的从来不是要记的东西，而是他出生时就刻在里面的东西。",
+        "你问他：“陈晓后来去哪了？”那半秒钟里，员工通道安静得能听见灯管镇流器的嗡声。他的脸没有僵，笑也没有收，只是话头空了一下，像唱片跳过了半圈。然后他说：“转正了，多好啊。”你想起老周说这句话的样子：抠着指甲缝里的胶带，不敢看人。小K说这句话的时候，眼睛直直地看着你，你数了，说完整句话，他没有眨过一次眼。灯光这么白，他连眼睑的影子都没有。",
+        "他身上还有缺口。老周在你躺下前提过自己的闺女，说答应她这班结束就回去送她上学，那件事只有老周和你们这个班的人知道，小K今天才来。你胸前口袋里，过塑的守则卡边角硌着肋骨，十二条印得清清楚楚，没有一行提到天台。通道尽头，2号与4号之间那道空档在卖场的光背后安静地等着；拐角过去是洗手间的门，门缝底下渗出一线水汽，守则第十条说，本店没有镜子，可每家店的洗手间都该有一面镜子，这一家的对不对得上，你还没有看过。小K微微前倾身体，像一位等学生抄完笔记的老师：“记住了吗？”",
+        "他的“更正版”还悬在空气里，等你道谢收下；老周闺女的那个名字在你舌尖压着；守则卡硌在口袋里，随时可以掏出来逐条核对；洗手间的水汽在拐角后面，安静地爬。"
+      ],
+      "whisper": "他背守则的样子，像在复述自己。",
+      "onEnter": {
+        "san": -5,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_fake_believe",
+          "text": "道谢，记下他的“更正版守则”",
+          "goto": "end_trust_faker",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_fake_test",
+          "text": "再问一个只有真人才知道的名字",
+          "goto": "n_aisle3_inside",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [
+              "f_obs_stutter"
+            ],
+            "clues": []
+          },
+          "requires": {
+            "sanMin": 40
+          }
+        },
+        {
+          "id": "ch_fake_mirror",
+          "text": "借口去洗手间，照照镜子确认自己",
+          "goto": "end_mirror",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_fake_book",
+          "text": "掏出守则卡，当面逐条核对",
+          "goto": "n_aisle3_inside",
+          "effects": {
+            "san": 5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          },
+          "requires": {
+            "flags": [
+              "f_item_rulebook"
+            ]
+          }
+        }
+      ]
+    },
+    "n_aisle3_inside": {
+      "act": 2,
+      "title": "三号货架",
+      "location": "3号货架",
+      "ambient": "货架深处的光没有光源，均匀得像泡在水里。",
+      "text": [
+        "空档在你走过之后合拢。你身后的通道只剩货架的背面，没有来路，也没有来路的方向。光从很深的地方自己亮起来，均匀，温吞，没有光源，货架一排一排向里延伸，比你眼睛能对焦的深度还深，最里面那一排小得像缩印的模型，可你看清它的每一个细节。你的鞋底落在地面上，没有声音。",
+        "商品安静地挂在真空袋里。近处这一排的标签印得温温柔柔：罐装的晚安，真空封存的拥抱。袋子很轻，挂在那里却纹丝不动，仿佛里面封住的都不是东西，而是一些一旦晃动就会洒出来的时刻。再往里，货架间的空气变得很稠，静得像有谁在替你屏住呼吸。",
+        "你手里的拣货单只有一行字：昨晚牌牛奶×1。第三层货架，一整排纸盒牛奶，盒身上的品牌名叫“昨晚”，配色是一种疲惫的奶白，整排牛奶干净得像从来没有被谁需要过。拣货单的边角很新，新得像今晚才印出来，像有人早就知道你会走进来。",
+        "最显眼的位置正对着你，在一只单独的挂钩上。那里挂着一只真空袋，尺寸不大不小，里面蜷着一个人形的轮廓，姿势和你此刻站立的姿势分毫不差。价签是手写的，写着你的名字。字迹和你的一模一样，一样的顿笔，一样往右上挑的收笔，连你写名字时习惯的那一处连笔都在。保质期一栏，端端正正两个字：永久。",
+        "其他价签就在手边。远处的几枚蒙着一层白雾，近处的几枚只要凑近一点，笔画就清清楚楚，手写的名字一个挨着一个，保质期一栏整整齐齐，全是“永久”。拣货单上的牛奶贴着你的手，一伸手就够到。你身后，来路是一面光洁的货架背板，找不到一丝缝。这里的一切都在等你的手：牛奶，价签，或者那只印着你名字的袋子。"
+      ],
+      "whisper": "它等你伸手，已经很久了。",
+      "onEnter": {
+        "san": -15,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_in_pick_self",
+          "text": "取下那袋写着你名字的商品",
+          "goto": "end_shelved",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_in_pick_list",
+          "text": "只拿拣货单上的牛奶",
+          "goto": "n_aisle3_aftermath",
+          "effects": {
+            "san": 0,
+            "assim": 5,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_in_leave",
+          "text": "空手退出去复命",
+          "goto": "n_aisle3_aftermath",
+          "effects": {
+            "san": -5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_in_tags",
+          "text": "凑近偷看其他价签上的名字",
+          "goto": "n_aisle3_aftermath",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": [
+              "f_clue_barcode_price"
+            ]
+          },
+          "requires": {
+            "sanMin": 40
+          }
+        }
+      ]
+    },
+    "n_aisle3_aftermath": {
+      "act": 2,
+      "title": "补货之后",
+      "location": "卖场",
+      "ambient": "过道的宽度比来时薄了一指，薄得刚好卡在肩线以外。",
+      "text": [
+        "03:29，你从那道空档里退回卖场。过道迎面挤过来，你先注意到自己的手肘：两侧货架的距离比来时窄了一指。你没有量过，可你的身体量了，肩膀擦着货架的棱走，来的时候明明空出一拳。你停下，跺了一脚。脚步声弹回来的回音多了一记，很轻，跟在你的第三步后面，节奏和你一样，只是慢了半拍，像有人躲在货架背后学你的步子。",
+        "一位面善的人迎面站定，像等了你很久。他的工牌别得很正，笑容的和善挑不出毛病。“我来替你，”他说，“你去睡。”他往休息室的方向偏了偏头。那个方向隔着几排货架，可你忽然觉得那张折叠床很近，近得能闻到床单上洗衣粉的味道，墙上的头影在灯下泛着浅褐色，一张侧躺面壁的床，此刻听起来像一种仁慈。他站在过道正中，客气，安静，把“替你”两个字说得像一种福利。",
+        "你下意识去看他的影子。灯区的光很足，他的影子薄薄一片铺在地板上，形状端正，两只手里什么都没有举。可影子的头是低着的，朝着休息室的方向，像替他先看了一眼你要去睡的那张床。你抬眼去看他真正的脸，他还在笑，弧度没有变过，眼睛也没有跟着头一起偏。你想起守则里没有写过的一句话：影子应该跟着人。玻璃门外，永昼亮得没有一丝阴影，一个白天的客人都没有。",
+        "值班经理在灯区朝你招手。灯区的灯管正一根接一根地眨眼，从最远处开始，一下，一下，按着次序蔓延过来，像有人在逐个掀开抽屉，又像点名，每闪一下，货架间就静一分。它招手的手势很慢，掌心朝上，容忍度极高。它身后的灯海白得像一张摊开的纸。",
+        "收银台的方向传来收银机空转的嗡声，隔着一整个卖场，像倒计时贴着你的后颈。你还有几分钟。你可以走向灯区，帮经理检查那些眨眼的灯管；可以信他的话，把这一班交给那位面善的替班人；也可以顺着员工通道走到底，上天台透一口气，小K的“更正版守则”说，安全门要经天台绕行。或者，你谢绝替班，继续巡你的店，朝着那片开始眨眼的灯走过去。"
+      ],
+      "whisper": "替班的人很闲，闲得专门来等你。",
+      "onEnter": {
+        "san": -5,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_after_lights",
+          "text": "走向灯区，帮经理检查灯管",
+          "goto": "n_light_flicker",
+          "effects": {
+            "san": 0,
+            "assim": 5,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_after_roof",
+          "text": "上员工通道尽头的天台透气",
+          "goto": "end_rooftop",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_after_sub",
+          "text": "让“接班人”替你值完这班",
+          "goto": "end_early_handover",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_after_stay",
+          "text": "谢绝替班，继续巡查",
+          "goto": "n_light_flicker",
+          "effects": {
+            "san": 5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_light_flicker": {
+      "act": 2,
+      "title": "闪烁",
+      "location": "灯区",
+      "ambient": "灯管按次序明灭，把整条灯区点成一排会呼吸的抽屉。",
+      "text": [
+        "03:31，你走进灯区的时候，闪烁正好蔓延到第三排。灯管按次序暗下去，又亮起来，每一次暗下都只比你眨眼快一点，快得让你分不清是谁在模仿谁。最近那根灯管下面挂着一张塑封的检修单，纸角卷起，打印的字迹工整：每夜03:00熄灯3秒，例行盘点；当夜未执行者，于交接班时补熄。",
+        "守则第六条在你的记忆里一字一字亮起来，比灯快：本店永远灯火通明，任何一盏灯都不许熄灭。如果你看见某盏灯在闪烁，请立刻背对它，大声从1数到30，期间不得处理任何其他事务。你转过身，让闪烁落在背后，开始数。“七。”你的声音在空荡的卖场里被货架接住，又扔回来。灯的闪烁隔着你的后脑勺继续，一下一下，把你的影子在地上点亮又抹掉，点亮又抹掉，像有人在借你的影子点名。",
+        "“十五。”关东煮的保温柜就在你右侧一步远。玻璃罩上蒙着薄薄的水汽，灯光每暗一次，罩里的映像就换一个位置。第十五下暗下去又亮起来的间隙里，玻璃罩里映出一张脸。不是你的。它离你很近，近得只隔着那层玻璃，五官安详，嘴角上扬的角度和值班经理如出一辙。守则第十条：本店没有镜子。如果你在反光表面看见一张不属于你的脸，请不要看清它，并且眨眼不要超过一次。你的眼睛开始发酸，睫毛沉得像挂了霜。",
+        "身后那根灯管还在闪，检修单就挂在你背对的方向，塑封纸每闪一下白一次，像在替你翻页。你还在数。“二十一。”数数用的是嘴，守则只说不得处理任何其他事务，它没有说眼睛算不算事务，那个漏洞就悬在你的眼角，和那张检修单一样近。冷柜的方向传来三长两短，很轻，像在对这个时刻做记录。",
+        "“二十五。”你的声音开始发干。还有五下。你可以背对灯管，老老实实数满三十，把这一页翻过去；可以在闪与闪的间隙里，用眼角去够那张写着“补熄”的检修单；也可以转过去，看清玻璃罩里那张脸；或者干脆伸手，把这根烦人的灯管按灭，反正它自己也在一明一灭，仿佛早就想歇一歇了。"
+      ],
+      "whisper": "灯管在学人眨眼。",
+      "onEnter": {
+        "san": -10,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_light_tag",
+          "text": "数数间隙偷瞄检修单",
+          "goto": "n_act3_open",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": [
+              "f_clue_lamp_tag"
+            ]
+          },
+          "requires": {
+            "sanMin": 40
+          }
+        },
+        {
+          "id": "ch_light_count",
+          "text": "老老实实背对，数满30",
+          "goto": "n_act3_open",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_light_switch",
+          "text": "伸手按灭那根烦人的灯管",
+          "goto": "end_blackout",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_light_blink",
+          "text": "看清玻璃罩里那张脸",
+          "goto": "end_two_blinks",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_act3_open": {
+      "act": 3,
+      "title": "盘点开始",
+      "location": "收银台",
+      "ambient": "灯一排排矮下去，收银机的滚轴空转着，把一截白纸舌举在半空，像一只不敢放下的手。",
+      "text": [
+        "你从灯区退回收银台的时候，三十下正好数完，最后一下停在喉咙里，没有落下去。你身后的灯并没有恢复秩序。03:33，整排灯管像被一只看不见的手从左到右依次按过，光一节一节地矮下去，暗得从容，暗得像在执行一张你没见过的流程单。顶灯的电流声换了一个音高，比整夜都低，像乐器松了弦。本店永远灯火通明，这一条你背了一整夜，背得能听出标点的停顿。而现在，这家店当着你的面，一盏一盏，亲手把它熄掉。",
+        "比灯更安静的是人。收银台前的地砖上还留着几行排队时蹭出的鞋印，鞋头一致朝着柜台；关东煮的汤锅坐在原处，最后一点热气正从锅沿散掉，汤面平得反常，不再翻滚。阿婆惯坐的那张椅子空着，椅背上搭着旧毛毯的一角，毯面上还留着一个人形的凹陷。台面上摊着半截没打完的小票，金额那一栏空着。整家店的顾客，不知什么时候，全部走了。没有门铃，没有道别，连一声脚步都没有留下。他们走得像被一句你听不见的话，轻轻叫了回去。",
+        "收银台上方的时钟抖了一下。不是你入职那晚见到的那种心跳似的轻颤。这一次，秒针真的离开了刻度：针尖抬起半格，悬在空中，像一只抬起来还没敢落下去的脚。表盘后面传出很轻的咔声，一声，停一停，又一声，间隔比上一次短。你想起灯管下面那张检修单：每夜03:00熄灯3秒，例行盘点；当夜未执行者，于交接班时补熄。灯在一盏一盏地兑现，秒针在一格一格地兑现。这家店开始还它自己的账了。",
+        "值班经理就站在收银台后面。你没有听见它过来。它今晚第一次没有笑，嘴角和眼睛难得同时安静着，安静得近乎有礼貌。“交接要开始了，跟我去后仓盘点。”它说。说完，嘴角才姗姗补上一个笑，眼睛照旧慢了半拍。它的手交叠在围裙前，指尖干干净净，没有一丝打印油的痕迹。它身后的员工通道敞着，通道深处的灯暗了一截，黑得很平整，边缘笔直，像一道刚刚裁好的口子。它朝那边偏了偏头，幅度很小，像怕惊动什么。",
+        "柜台电话在这时自己响了。铃只响了半声，听筒里涌出来的不是铃音，是白噪，沙沙的，均匀的，好像一整条线路上只接着忙音和雪。忙音规律地断开，又规律地接上，像一头很有耐心的东西在练习人的呼吸。听筒搁在台面上，线绳一圈一圈盘得很整齐，话机的角度正对着你，像早就被人摆成了一个递过来的姿势。你今晚替很多人结过账，你知道这台电话可以打出去。它现在就在等你拿起它。",
+        "正门在卖场另一头立着。玻璃外面是永昼，白得没有阴影，白得把你的倒影都晒淡了，淡得像那个人已经先一步走了出去。那扇门只朝里开，你入职第一晚就注意到了。此刻它安安静静地亮着，明亮，体面，像一个敞开着的谎。而休息室在你身后另一条走廊的尽头：你的柜子在那里，老周的柜子在那里，几样你这一夜没来得及放下的东西，也在那里。",
+        "“有员工的样子，就要有员工的流程。”值班经理又朝后仓偏了偏头。秒针第二次抖动，这一次离开刻度整整一格，表蒙上洇开一圈极细的雾。收银机无端吐出一小截白纸，纸上什么也没有印，纸尾在冷气里轻轻地颤。灯区尽头，最后一根亮着的灯管眨了眨，稳住了，像在替全店保留最后一点白昼。你听见自己咽了一下。喉咙里全是打印纸和冷气的味道。",
+        "你站在原地，忽然意识到一件事：这一整夜，你替每一位顾客结过账，却从来没有结过你自己的。收银机认得你的指印，时钟认得你的班次，货架深处那件商品认得你的名字。现在它们全都在等最后一笔，等一个站在柜台后面、还自以为是员工的人，亲手替这一夜画上句号。电话在响，白昼在亮，后仓的方向黑得平整。三个方向都很有耐心。你数过的三十下早就用完了，现在轮到别的东西，替你数。"
+      ],
+      "whisper": "它整晚只响这一次。它在等你拿起听筒。",
+      "onEnter": {
+        "san": -10,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_act3_back",
+          "text": "跟着经理进后仓",
+          "goto": "n_backroom",
+          "effects": {
+            "san": 0,
+            "assim": 5,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_act3_locker",
+          "text": "借口放东西，先回休息室",
+          "goto": "n_locker_room",
+          "effects": {
+            "san": -5,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_act3_call",
+          "text": "抓起柜台电话报警",
+          "goto": "end_call_police",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_act3_front",
+          "text": "砸开正门冲进白昼",
+          "goto": "end_flee_front",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_locker_room": {
+      "act": 3,
+      "title": "第八枚挂钩",
+      "location": "休息室",
+      "ambient": "没有风的休息室里，七枚工牌轻轻碰了一下挂钩，声音像有人咂了咂嘴。",
+      "text": [
+        "你以放东西为由，脱开了值班经理的视线。它居然点头，点得很痛快，像这一站早就被排进了今晚的流程。回休息室的走廊比来时更长，你每落一步，走廊深处就还你一声一模一样的脚步，慢半拍，不轻不重。顶灯暗着，亮的是墙根一溜小小的夜灯，绿的，把地面泡出一种水底的颜色。门口的挂钩上挂着你的围裙，不知什么时候被人熨过了，平得不像你穿过的那一件。你放轻了脚步。那声多出来的脚步，也跟着放轻了。",
+        "储物柜全开着。整整一排，八扇柜门大敞，敞得像一句说到一半的话。你记得之前经过时它们还锁着，柜门上贴着褪色的编号；现在编号一张都不剩，每扇门内侧只剩一枚挂钩。七扇门里，各挂着一块工牌，从左到右，用的还是同一种挂绳，绳结的打法都一样，像出自同一双手。",
+        "七块工牌上的照片，是同一张脸。你凑近去看。最早的那块已经泛黄，照片上的眉眼陌生，嘴角绷得很紧，是那种还没学会微笑之前的紧。第二块，颧骨高了一点。第三块，眼距窄了一点。一块一块看过去，那张脸在极慢极慢地调整自己，像有人对着镜面，耐心地挪动五官。看到第七块的时候，你的呼吸停了半拍：照片上的眉眼，和你每天在玻璃门反光里看见的那个自己，几乎分毫不差。工牌都擦得很亮，挂绳却旧了。它们各自被佩戴过很长、很长的一夜。",
+        "第八扇门的挂钩空着。位置比其余七枚低一些，不偏不倚，正对你胸口的高度。你自己的工牌贴着皮肤，忽然重得像一块刚离火的铁。你后退半步，后腰撞上折叠床的床沿，床没有响。墙上那几代人靠出来的头影之间，多出一个新鲜的、边缘还很清晰的轮廓，不高，不矮，站的位置正是你此刻站的地方。你挪开半步，低头再看，那个轮廓还留在原处，边缘已经开始往墙里洇，像打算靠上很多年。",
+        "老周的柜门上贴着一张退租条。纸是新的，打印体，字很少：租约终止，物品限期清离。落款盖着一枚章，章上的字你认不全，可那圈印的形状你见过，收银机打出的每一张小票，纸尾都拖着同样淡淡的最后一圈。柜门里面还剩着他没带走的东西：半卷胶带，一枚工牌。工牌照片糊成一小团白雾，五官的位置空着，像一场没有下完的雪。你想起他抠指甲缝里胶带的样子，想起他说起陈姐转正的时候，眼睛始终看着别处。",
+        "角落里有一只柜子和别的都不一样：没有锁，没有编号，门轴却最亮，一看就常开常关。里面躺着一本手写守则。牛皮纸封面，边角磨得发圆，钢笔字一笔一画收得很稳，是一个把守时当作体面来过的人的字。你一页一页翻过去：第一条，第二条，第四条，第六条，第八条。页码在很整齐地跳号。第三条的位置上贴着一张打印纸条，四角溢出的胶已经干成浅黄；第七条的位置上贴着同样的一张。纸条比正文新，胶却是旧的，像贴的人不急，贴完就等，等了很多夜才有人来读。那种打印体你今晚见得太多：一字不差，连标点的停顿都对。",
+        "扉页的空白处有一行铅笔小字，笔画极轻，像怕把纸写疼了：“第三条与第七条，是后来贴上去的。别背。它们要的从来不是你守，是要有人替它划线。”你捏着那一页，站了很久。这一夜你咽下去的所有“不知道”，原来都是有人在很远的地方提前印好的账；名单背面那些铅笔写的对不起，那道划下去又复原的横线，此刻全部对上了。而页边这行轻得怕写疼纸的小字，是这一整夜里，唯一一句为了你而写的话。",
+        "走廊尽头传来值班经理的声音，隔着两道门，依旧温和：“盘点不等人。”休息室里没有钟，你只能靠冷柜的方向估算时间。那边隐隐约约，敲了三长，两短。第八枚挂钩在你面前空着，老周的工牌在他柜子里躺着，那本跳号的守则在你手里摊着。三样东西同时朝你敞开，像三个耐心很好的开口。挂绳在你颈后勒出一线重量。你忽然很想确认一件事：这排柜子里，还没有一枚挂钩，挂着你的名字。"
+      ],
+      "whisper": "还差一个，就齐了。",
+      "onEnter": {
+        "san": -5,
+        "assim": 0,
+        "setFlags": [],
+        "clues": [
+          "f_clue_seven_badges"
+        ]
+      },
+      "choices": [
+        {
+          "id": "ch_lock_ledger",
+          "text": "取出那本初版守则",
+          "goto": "n_backroom",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [
+              "f_major_ledger"
+            ],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_lock_hook",
+          "text": "把自己的工牌挂上第八枚挂钩",
+          "goto": "n_backroom",
+          "effects": {
+            "san": 0,
+            "assim": 20,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_lock_zhou",
+          "text": "带上老周的工牌，替他保留名字",
+          "goto": "n_backroom",
+          "effects": {
+            "san": 5,
+            "assim": 0,
+            "setFlags": [
+              "f_obs_keep_zhou"
+            ],
+            "clues": []
+          },
+          "requires": {
+            "flags": [
+              "f_item_zhou_badge"
+            ]
+          }
+        }
+      ]
+    },
+    "n_backroom": {
+      "act": 3,
+      "title": "后仓",
+      "location": "后仓·结算所",
+      "ambient": "打印头在后仓深处来回走针，哒，哒，像一只永远不会累的昆虫。",
+      "text": [
+        "后仓的门比你记忆里的窄。推开时没有阻力，冷气先出来，贴着你的脚踝铺开，然后是那股味道：热打印纸，旧塑料，还有一丝极淡的、甜腥的冷。门后不是仓库该有的样子。没有纸箱，没有托盘，没有码到天花板的货。货架从门口一直排进去，排到目力尽头还在继续，每一排都比前一排更暗一点。所有货架上码着同一种货——小票。一捆一捆，压得方方正正，像砖。",
+        "你随手抽出一捆。最上面那张小票的抬头印着一个名字。不是货名，是人名，三个字，打印得端端正正。第二张也是人名。一整捆翻过去，几十张纸，几十个名字，打印时间从很久以前的凌晨一直排到昨天的凌晨。有的名字印得深，有的淡得快要看不清，像被翻看过的次数太多。你把纸捆塞回去时，指尖按在纸捆侧面，那里的纸软得反常，温的，像一摞刚晒过的被褥。整面货架轻轻响了一声，你分不清是纸的声音，还是货架自己的。",
+        "第二排货架的第三层，你看见一个认得的名字。陈晓。三个字打印得比别的都新，纸面还亮着，品名一栏是空的，金额一栏也是空的，只有名字是满的。你盯着那三个字看了多久，自己也不知道。货架深处传来一阵很轻的挪动声，纸捆自己在收紧，一捆挨着一捆，像这面墙在清点自己的库存，像它知道，今晚有人来核对它。",
+        "值班经理在你身后关上了门。你转身时，它正抬着手，从下颌处揭自己的脸。那张脸被整张撕下来，没有声音，没有血，像揭一张过塑的卡片；揭下来的那一层还保持着笑，被它随手搭在小臂上。第二层脸在下面，也在笑，眉眼比上一层年轻一点。它又撕了一层。第三层还在笑。“盘点需要面对真实库存。”它说。说完这句话，你数不清它脸上还剩几层。你也不敢再数。",
+        "最深处的货架后面，冷气比别处都重。那股熟悉的、旧冰柜的腥甜味绕过纸墙飘过来，不远，也不近，像贴着纸墙的另一面，和你只隔一张纸的距离。然后你听见那个声音。哑的，慢的，每个字都像上过秤：“别把脸给他。”不是提醒的语气，比提醒旧得多，像一句重复了很多夜、并不指望被听见、却仍然按夜照说的流程。声音落下，纸墙深处轻轻响了三长，两短。这个节奏你认得，整个晚上，只有它从来没有变过。你回头去看，值班经理的第四层脸正撕到一半，动作顿了顿，又继续。",
+        "门口这时又进来一个人。面善，笑容干净，制服领口扣得一丝不苟，是你在卖场见过的那位“接班人”。它朝你伸出手，掌心向上，很有耐心：“工牌交给我保管，盘点期间统一挂放。”值班经理站在它斜后方，嘴角先动了，眼睛随后才跟上。你胸口的工牌忽然烫起来。你想起第十一条，想起那行你背熟过的字：把工牌亲手交给“多出来的那个人”。此刻，“多出来的那个人”就站在你面前，掌心向上，笑得很面善。",
+        "值班经理把一只浅口的盒子摆上货架最底层，盒里衬着软布，像收贵重东西的托盘。它又指了指仓库中央那辆平板车：车上的小票捆得比别处松，纸色最白，捆口挂着标签，标签上印着四个字，今日入库。最上面一张朝下扣着，纸角翘起，断口还带着打印头刚走过的温度。它没有替你翻。它只是退开半步，把那辆车，那只盒子，连同它自己一层一层的脸，一并向你敞开，像柜台上摆齐的三种付款方式。",
+        "你站在三种付款方式中间。工牌贴着心跳。这一夜你从这家店里带出来的每一样东西，都贴着你的身体，沉甸甸的，像别人寄存的行李。你还攥着哪些纸，只有你自己知道。你还算不算一件已经被记下的货，也只有你自己知道。打印头在深处走针，每落下一张纸，这个世界就又记上一笔。你忽然分不清，这间后仓是在存放人，还是在等人。没有谁说话，可整间仓库都在等你伸手。"
+      ],
+      "whisper": "今日入库的最上面，压着你的名字。",
+      "onEnter": {
+        "san": -10,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_back_obey",
+          "text": "交出工牌，配合盘点",
+          "goto": "n_promotion",
+          "effects": {
+            "san": 0,
+            "assim": 15,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_back_ledger",
+          "text": "摊开初版守则，质问哪些条款是后贴的",
+          "goto": "n_promotion",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [
+              "f_obs_confront"
+            ],
+            "clues": []
+          },
+          "requires": {
+            "flags": [
+              "f_major_ledger"
+            ]
+          }
+        },
+        {
+          "id": "ch_back_receipt",
+          "text": "在“今日入库”的小票堆里翻找",
+          "goto": "n_promotion",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [
+              "f_major_own_receipt"
+            ],
+            "clues": []
+          },
+          "requires": {
+            "sanMin": 30
+          }
+        },
+        {
+          "id": "ch_back_stranger",
+          "text": "把工牌交给闻讯赶来的“接班人”",
+          "goto": "end_badge_swap",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_promotion": {
+      "act": 3,
+      "title": "转正面谈",
+      "location": "后仓尽头·办公室",
+      "ambient": "后仓尽头的办公室是温的，暖得像一句劝。",
+      "text": [
+        "值班经理在前面引路，纸垒的货架在它身后一排一排退开。走到后仓尽头，货架忽然向两侧让开，让出一扇门。门里是办公室：一张桌子，两把椅子，一盏台灯。灯是暖黄色的。你愣了一下，才想起来这种颜色叫暖。这家店的每一种光都是白的，硬的，贴着头皮照下来的，只有这里例外。例外得像饵。",
+        "两把椅子面对面摆着。朝门那把摆得端正，是留给你的；对脸那把微微斜着，椅背上搭着一件叠好的制服外套，肩线平整，尺寸像在等一个人。桌面上压着一份文件，纸很厚，抬头两个字：合同。值班经理绕到桌子后面坐下，动作标准得像在做示范，然后把文件朝你推过来，指尖在纸面上按了按：“转正吧。双倍时薪，正式编制，再也不用等天亮。”",
+        "你低头去看。条款不长，措辞体面，福利一栏的数字差不多是你欠在外面的那笔债的两倍，像有人提前量好了你的尺寸。附件印了整整一页，是那十二条你已经能背的守则，一字不差，连你入职那晚折过的那道痕的位置都一样。落款处空着。空处只印着四个小字：自愿留任。四个字四周叠着一圈很浅的压痕，深深浅浅有好几层，像有很多人在这里签过很多次，每一次都签得心甘情愿。",
+        "桌角放着一枚小小的星形徽章，五个角，别针朝上，金属面擦得很亮：月度之星。徽章旁边是一支红笔，笔帽已经拔开，笔杆上没有指印，没有咬痕，干净得像从没被任何一只活人的手握过。收银台的笔筒里，也插着一支一模一样的。窗，如果那是窗，占了一整面墙。玻璃外面是永昼，光把玻璃压得嗡嗡作响，震动顺着桌腿爬上你的脚底。玻璃上没有把手。你顺着玻璃往上看，看不到窗框的上沿，那片光像是从墙里直接长出来的。外面没有云，没有影子，没有任何一样东西敢站在那片光里。",
+        "值班经理今晚的脸贴得格外平整，最新一层的笑意挂在恰到好处的位置。“你很标准。”它说，“全店打分，你是最标准的一个。”它顿了顿，难得补了一句：“上一个这么标准的，签得比你还快。”你想起落款处那几层深深浅浅的压痕，喉咙一阵发紧。办公室的暖风一下一下拂过你的手背，像有人蹲下来，把你冻了一整夜的手指一根一根焐热。这家店整晚都在冻你。只有在这里，它选择暖你。",
+        "你还没开口，它先把话接了过去，温和得像早就听见了你心里那一句：“零点签的那份，在系统里。系统现在只认桌上这一份。”它身后的墙上挂着一排小小的相框，七个，玻璃擦得很亮，每一张照片都是同一个笑容，并且一张比一张更像你。相框下面钉着缎带，印着同一行字：月度之星。第七个相框旁边，第八枚钉子已经敲进了墙，空着，位置正好在两张椅子中间。",
+        "办公室另一头还有一扇门，虚掩着，门缝里淌出走廊的白光，笔直，看不见头。你记得守则里关于安全门的那一条：那不是出口，走廊只会把你送回岗位。此刻那道白光安安静静地淌到桌腿边，就停住了，像水碰到了账本的边。冷柜的方向，隔着这么多排纸垒的墙，隐隐约约，敲了三长，两短。那个哑而守时的声音的主人，还在数他自己的时间。也在数你的。",
+        "台灯把合同照得透亮。自愿留任四个字泛着蜡一样的光。红笔躺在落款旁边，笔尖朝内，安静得像早已有人替你做好了决定。窗外的永昼又压低了一度，玻璃的嗡鸣升了半个音。你想起招聘启事上的那四个字，日结高薪。那四个字把你领进这扇只朝里开的门。现在，整间办公室只剩三种声音：暖风的，玻璃的，和你自己的心跳。最后这一种，越来越像滴答。"
+      ],
+      "whisper": "双倍的不止时薪。",
+      "onEnter": {
+        "san": -5,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_promo_sign",
+          "text": "签下“自愿留任”",
+          "goto": "end_perfect_clerk",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_promo_tear",
+          "text": "撕掉合同，要求按0点的合同交接",
+          "goto": "n_final",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_promo_ask",
+          "text": "出示七枚工牌，问上一任也签了吗",
+          "goto": "n_final",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          },
+          "requires": {
+            "flags": [
+              "f_clue_seven_badges"
+            ]
+          }
+        },
+        {
+          "id": "ch_promo_run",
+          "text": "趁它低头盖章，溜向安全门走廊",
+          "goto": "end_walk_out_corridor",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    },
+    "n_final": {
+      "act": 3,
+      "title": "交接班",
+      "location": "收银台",
+      "ambient": "空白小票从滚轴里一点一点探出来，像退潮时露出来的第一样东西。",
+      "text": [
+        "从后仓回到卖场的路，来时你走了很久，回去只用了几十步。暗掉的那排灯还暗着，暗得服服帖帖，一丝都不闪。收银台的时钟隔着半个卖场就在抖，走近了看，秒针悬在03:33的刻度上，一格一格地挣，每挣一下，表蒙上就洇开一圈极细的雾。整块表盘像一颗跳得很吃力的心脏。你知道它随时会迈出今晚的第一步，也知道守则里那条约定：交接班将立刻开始——请务必在场。",
+        "值班经理送你到收银台前，最后一次替你把台面抹平。它抹得很慢，很匀，像在给一件即将交割的东西做最后的清洁。抹布过处，台面亮得能照出人形，你这一夜留在台面上的每一道指印都被擦掉了，干净得像你从来没有来过。没有人碰收银机，滚轴自己转了起来，吐出一张小票。空白的，白得干干净净，一个字都没有。它探出半截，停住，纸尾在冷气里轻轻地颤，像在等墨，又像在等别的什么。",
+        "然后字浮上来了。不是打印头打出来的，是从纸的深处自己洇出来的，像水渗过石灰。最上面，三个词一个一个排开：交接。结账。上架。词与词之间空得很开，排得很正，像三位提前到岗的同事。交接，是站回这个位置，把流程一毫不差地走完，走出一个无懈可击的夜班；结账，是拿起扫码枪，对准你自己的工牌，以顾客的身份从这扇门里走出去，顾客不用交班，顾客随时可以离店；上架，是走进2与4之间，躺进那件为你留好的、没有条形码的真空袋，让价签替你写好名字。三个词下面空着一行。空行的底下还有一行小字，浅得几乎吃进纸里，你必须把小票凑到灯下才看得清：“账实不符?可申请退货。”",
+        "冷柜的方向传来敲击声。三长，两短。隔着一整排货架，那声音不急，不缓，每一下都落在它该落的点上。这一夜你听过的声音很多：门铃，白噪，打印头，还有撕开过塑卡片时那种安静的响。只有这一种，从头到尾没有变过调。敲它的人被划掉过七次，又复原了七次，此刻还在用指节保持最后的礼貌。霜层后面的人不知道你会选什么。他只是在数。数到你做完决定为止。",
+        "你低头，看了一眼柜台下那只纸箱。阿婆的小票还在里面，厚厚的一沓，整夜没有变薄。她每夜付一次钱，每夜买同一盒关东煮，锅里的库存却从来没有少过。这只箱子装不下任何货物，它只装得下一个人，一遍又一遍地付钱。你现在站的位置，离那只箱子只有一步。原来这家店从头到尾都在收同一种货款，你只是今晚轮到的那一个。",
+        "值班经理退后半步，把收银台前正对顾客的位置让给你。它两手交叠在身前，站得笔直，嘴角先动了：“当时钟重新走动，交接班将立刻开始——请务必在场。”它复述得像唱名。你把手按在口袋上。工牌在。这一夜你亲眼看过、亲手碰过的每一张纸，都在记忆里排好了队：写满铅笔对不起的名单背面，灯管下面那张检修单，还有那些你此刻说不清是在身上、还是只在脑子里的纸页。可是你记得。记得，是你身上最后一件没有被打上价签的东西。",
+        "秒针又挣了一下。这一次，表盘深处发出一声很清的咔，像一枚齿轮终于咬上了那个被空等了一整夜的齿。全店没有熄的灯同时亮到最满，亮得把最后一点影子都收走了。收银机吐纸的节奏快起来，那张空白小票又探出一截。四个去向在纸面上排着队，三个醒目，一个很浅。最浅的那个最安静，像压在退货箱最底下的一层，像一句只有把纸凑到眼前的人才看得见的话。",
+        "你站在收银台后面，站在你守了一整夜的位置上。玻璃外面，永昼把正门晒得发白；玻璃里面，三长两短还没有停。你朝手心呵了一口气，雾气凝上来，又散了。会散的，是你的。没有谁催你。这是这一整夜里，这家店第一次不催你。它有的是时间。而你的时间，正悬在一根发抖的秒针上。"
+      ],
+      "whisper": "本店商品，概不退换。",
+      "onEnter": {
+        "san": -5,
+        "assim": 0,
+        "setFlags": [],
+        "clues": []
+      },
+      "choices": [
+        {
+          "id": "ch_final_return",
+          "text": "出示证据，宣布账实不符，办理退货",
+          "goto": "end_true",
+          "effects": {
+            "san": 10,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          },
+          "requires": {
+            "flags": [
+              "f_major_own_receipt",
+              "f_major_ledger"
+            ],
+            "cluesMin": 7,
+            "assimMax": 55
+          }
+        },
+        {
+          "id": "ch_final_self",
+          "text": "扫描自己的工牌，以顾客身份离店",
+          "goto": "end_last_customer",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_final_shelf",
+          "text": "躺上3号货架，接受上架",
+          "goto": "end_shelved",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        },
+        {
+          "id": "ch_final_perfect",
+          "text": "一丝不苟完成交接，静候晨光",
+          "goto": "end_perfect_clerk",
+          "effects": {
+            "san": 0,
+            "assim": 0,
+            "setFlags": [],
+            "clues": []
+          }
+        }
+      ]
+    }
+  },
+  "endings": {
+    "end_early_handover": {
+      "type": "death",
+      "title": "提前下班",
+      "text": "那位面善的“接班人”双手笼在袖口里，声音干净得像刚拆封的商品：“我来替你，你去睡。”这一夜太长了，长到你开始相信，把班交到一个愿意接的人手里，是一种两全。你把工牌拍进它摊开的掌心。守则第1条写过：当时钟重新走动，交接班将立刻开始——请务必在场。可你刚刚亲手把“在场”转让了出去。收银机应声吐出一张单据，抬头两个字：离职。你的名字从在岗名单上滑落，像一颗被拨正的算珠。变化从指尖开始，十根手指先褪成纸的颜色，接着是小臂，纸页一层层从你身上揭下来，边缘还带着体温。穿堂风准时赶到，从2与4之间那道缝隙灌进来，把这沓“你”吸进货架深处，传来一声归档般的轻响。值班经理在灯区尽头朝“接班人”颔首，嘴角先动，眼睛慢了半拍。而在表世界，人事抽屉里的考勤表摊在原处，你这一夜的格子里干干净净，连一道打卡的划痕都没有。",
+      "ruleViolated": "R01"
+    },
+    "end_scan_person": {
+      "type": "death",
+      "title": "已售出",
+      "text": "指尖落在它身上的那一刻，扫码枪自己响了——无论那是一只真空封存的袋子，还是一块没有刻度的旧怀表。守则第2条的三个“不要”，你背得出来：不要扫码，不要触碰，不要打听价格。可你碰了，或者说，你动了把它当成商品来处理的念头。对这家店而言，念头就是收据。小票从收银机里滚出来，商品名一栏印得清清楚楚：夜班店员，全新。你还没来得及念出声，胶带就绕了上来，一圈，又一圈，你保持着找零的姿势，五指微张，像一枚正要递出去的硬币。真空压缩从脚底开始，肺里的空气被仔细抽走，整个过程安静、专业，带着库房里特有的秩序感。3号货架最显眼的位置，今晚多了一件码放整齐的商品，营业报表的最末一行添了一笔进账，备注栏里只有四个字：售后不退。最后收口的那圈胶带贴得极其平整，连一个气泡都没有留下。",
+      "ruleViolated": "R02"
+    },
+    "end_aisle3_keeper": {
+      "type": "death",
+      "title": "货架深处",
+      "text": "你的手伸进2与4之间的空档，动作很轻，像替谁掩上一扇没有门槛的门。守则第3条开头那句斩钉截铁：本店没有3号货架。没有的东西本不该被摸到，可你的手正搭在它上面，这份“摸得到”从被你碰实的那一刻起，就算在了你的账上。冷空气顺着腕子往上缠，带着旧冰柜的腥甜，不急，很有秩序。货架从两侧合拢过来，动作温柔得近乎体贴，导轨上的价签一枚枚擦过你的袖口，哗啦啦响成一片，像打烊前放下的帘子。你想后退，脚跟没有找到地面；你想喊，广播正放到轻快的段落，把一切声音都收拾得干干净净。关东煮咕嘟作响，收银机偶尔清点库存，整家店照常运转，没有一位顾客抬头。次日清点，值班经理逐排走过，在本子上记下：样品陈列，状态良好，无需补货。那具体态自然的样品立在卖场深处，工牌端端正正别在胸口，笑容是全店最标准的一个。2与4之间恢复了原样，价目导轨上那截撕剩的标签轻轻晃了一下，停了。",
+      "ruleViolated": "R03"
+    },
+    "end_freezer_deal": {
+      "type": "death",
+      "title": "守时的人",
+      "text": "“03:33。”你回答。话音出口的瞬间，脚边悬停了半晚的冷气动了，像一笔终于对上的账。守则第4条写过：无论里面传出什么声音，都不要回应，更不要打开。你只是回答了一句时间——可对这家店来说，回应就是报价。冷柜深处传来一声叹息，很轻，如释重负：“那正好，还来得及。”从那一秒起，你的时间开始倒着走。先是今晚，灯光一层层暗下去，像有人在你眼前合上册页；然后是昨天，你想不起自己是怎么进的店，招聘广告的字句从记忆里褪成空白；再往前，是名字，舌尖抵着牙齿，那三个字怎么也推不出去。收银机在不远处殷勤地滚动，打出最后一张小票：品名，时间；数量，若干；备注，欠款两讫。冷柜重新安静下来，敲击声不再响起，霜花慢慢合拢。收银台的时钟还在原处，停在03:33，秒针抖了最后一下，把余下的岁月咽了回去。",
+      "ruleViolated": "R04"
+    },
+    "end_lie_debt": {
+      "type": "death",
+      "title": "坏账",
+      "text": "名单上四个名字，店里三个人。收银机的出票口张着，像在等你一句结束语。“人数核对无误。”你说得又快又稳，稳得连自己都信了一瞬。守则第5条讲得很直白：谎言会被记账，账，是要还的。收银机当场结清，咔，咔，咔，连吐三张小票，每一张背面都盖着鲜红的章，一个字：谎。第一张收走你今晚说过的话，第二张收走你正要说的话，第三张收走你还没想好要不要说的话。三笔勾清，它顺手扣下你说话的能力抵债。你张着嘴站在收银台后，喉咙里空空的，像一台没了墨的打印机，指示灯亮着，打印纸照走，字一个也出不来。03:31，灯区开始逐根闪烁，值班经理宣布盘点开始。盘点的队伍推进到收银台时，没有人向你要任何凭证，几只手同时抬起你，动作标准，轻拿轻放，像搬一件怕磕碰的货。你最后看见的，是柜台上那三张小票被穿堂风掀起一角，红章朝着灯，亮得像三枚新落的印。",
+      "ruleViolated": "R05"
+    },
+    "end_blackout": {
+      "type": "death",
+      "title": "数到三十",
+      "text": "那根灯管闪得越来越乱，频率忽长忽短，像谁在犹豫要不要开口。守则第6条只给过一个动作：背对它，大声从1数到30。你数到二十七的时候终于烦了——数数有什么用，灯还在闪。你抬手，把它按灭了。世界痛快地黑了一瞬。黑暗里，你剩下三个数没有数完，它们被另一个声音接了过去，不紧不慢，贴着你的耳廓：“二十八、二十九——三十。”它替你数完了，尾音里有种下班打卡般的轻松。灯再亮起来的时候，你还在原地，卖场也还在原地，只是货架之间立起了一根新灯管：惨白，笔直，灯罩的轮廓很像一个站着的人。值班经理从灯区那头走过来，仰头端详片刻，满意地在工作本上添了一行：设备更新，运行良好。广播照常放着音乐，关东煮照常咕嘟作响。那根新灯管的光比全店任何一盏都稳，一丝也不闪。",
+      "ruleViolated": "R06"
+    },
+    "end_crossed_out": {
+      "type": "death",
+      "title": "被划掉的人",
+      "text": "四个名字，三个人。你把名单看了两遍，得出一个再合理不过的结论：多出来的那个是你。你昨晚才来，谁也不认识你，工牌照片都还没来得及换。守则第7条要你找出多出来的那一个，用红笔在名字上画一条横线——你从笔筒里抽出那支红笔，划掉了自己。笔尖落在纸上的那一瞬，整张名单轻轻舒展了一下，像一笔悬了很久的账终于对上。收银机安静地打出回执：多余人员已核销。变化从指尖开始，先是小指，透明得能看见底下收银台的木纹，然后是无名指，一根一根，不慌不忙。你想喊，店里没有任何人抬头：值班经理在核对灯区，顶班的陌生人在码货，连冷柜的敲击都保持着原有的节奏。透明漫过手背的时候，你低头看了一眼名单——四个名字变成三个，背面那些铅笔写的“对不起”里，多了一行新的，字迹和你的一模一样。红笔从台面上滚下去，停在收银台边缘，笔尖那一点红，迟迟没有干。",
+      "ruleViolated": "R07"
+    },
+    "end_open_eyes": {
+      "type": "death",
+      "title": "应答",
+      "text": "墙那边的声音已经换过好几轮了：先是阿婆，然后是你妈，尾音一模一样，像同一个人在换着嗓子练习。守则第8条把话说死了：无论听见谁用谁的声音叫你，都不要睁眼，不要应答。可你翻来覆去地想，看一眼总不算应答吧，规矩没这么死。你睁开了眼。休息室里什么都没有，只有墙。可你看见了它，而那一眼的对视，正是它等了一整晚的东西。“找到了。”它说，声音不大，像店员迎客的第一句话。之后的一切没有声音：折叠床的弹簧轻轻响了一下，你的被子被谁接了过去，叠好，压平。02:30，老周回到休息室，床铺得整整齐齐，被角一丝不苟，只有枕面上还留着一个侧躺的凹痕。他在门口站了很久，没敢开灯。墙上几代人靠出来的头影里，多了一个新的；从影子的角度看过去，你正被谁牵着手，不急不缓地，往墙的更深处走。老周把你的枕头摆正，又抚平了一遍，像整理一件不再有人认领的行李。",
+      "ruleViolated": "R08"
+    },
+    "end_refuse_customer": {
+      "type": "death",
+      "title": "不",
+      "text": "西装顾客把怀表又往前推了半寸，表盘上逆转的指针走得很有耐心。“就要它，现在。”你喉结动了动，那个字冲口而出：“不。”字一出口就被收走了，干脆得像从你嘴里拔掉一颗牙，舌根上只留下一个凉丝丝的窟窿。顾客却满意地直起身，朝你深深鞠了一躬：“好的。”他一步三回头地退进货架之间，像一位拿到了承诺的客人。守则第9条写得明白：不得对顾客说“不”。它没有说的是，这个字一旦说过一次，就会在你嘴里生根，再把别的词一座一座挤出去。从那一刻起你只会说“不”了：经理问你值不值下一班，你说不；关东煮的香气飘过来，你说不；冷风从柜缝里发出邀请，你说不。每个“不”字都被收银机轻轻记下一笔，账越记越厚，你的词越来越少。天亮的时候——如果那也算天亮——店门开了，进来的人看见收银台后站着一位只会摇头的新店员，工牌崭新，笑容标准。收银台的抽屉半开着，那块没有刻度的怀表躺在最里面，指针终于停了。",
+      "ruleViolated": "R09"
+    },
+    "end_two_blinks": {
+      "type": "death",
+      "title": "第二次眨眼",
+      "text": "数到第15下的时候，关东煮的玻璃罩里映出一张不是你的脸。守则第10条给过你两条退路：不要看清它，眨眼不要超过一次。可你太想知道那是谁了。第一次眨眼，很短，短得几乎算诚实——再睁眼时，玻璃罩里那张脸近了一些，五官的轮廓和你的有几分像，又处处差着半寸。你告诉自己，只看这一次。第二次眨眼落下去的瞬间，你们互换了位置。玻璃是凉的，贴着你的鼻尖；罩内的灯光把你照得纤毫毕现，你想动，关节却僵得像陈列了一夜的样品。罩外，“你”揉了揉眼睛，动作自然得挑不出毛病，然后弯腰继续理货，把真空袋一袋一袋码正。顾客从它手边经过，没有人多看一眼。你隔着玻璃看它眨眼：频率恒定，间隔精确，和你练了一整晚、为了显得像个活人的那副样子一模一样。玻璃罩上慢慢凝起一层水雾，不多不少，正好落在你呼气的位置。",
+      "ruleViolated": "R10"
+    },
+    "end_badge_swap": {
+      "type": "death",
+      "title": "冒名者",
+      "text": "后仓的风里全是小票的味道。那个“接班人”迎面赶来，笑容干净，伸手的方向彬彬有礼。你想起点名的规矩：把工牌亲手交给多出来的那个人。眼前这位来得这么巧，来得这么对，你把工牌放了过去。它接住的瞬间，照片变了——塑封里那张脸慢慢换成它的，眉眼平滑，像热蜡重新塑过一遍。而你的脸，开始对不上任何名册：收银机的屏幕扫过你，停在一片空白上；在岗名单翻了两遍，没有一个名字肯认领你。值班经理不知何时已站在你身后，和蔼地举起名单，语气像在复述一条熟悉的守则：“多出来的那个人，请站出来。”全店的灯一齐转过来，光落在你身上，稳稳的，一丝不闪。你张了张嘴，却发现自己无处可站：你的名字已经不在任何一本账里了。别着你工牌的“接班人”朝你欠了欠身，退进货架的阴影。收银机吐出一张新单，墨迹很新：冒名顶替，人证不符。回执的边缘裁得笔直，像刚被人用小刀仔细裁过。",
+      "ruleViolated": "R11"
+    },
+    "end_walk_out_corridor": {
+      "type": "death",
+      "title": "脱班",
+      "text": "趁它低头盖章，你拉开安全门闪身出去。门在身后合拢的声音很轻，像一页账被翻了过去。走廊笔直，惨白，两侧没有一扇门，灯管一根接一根排到看不见的地方。守则第12条其实提醒过你：那不是出口，走廊只会把你送回岗位。你没走多远就听见了滴答声——头顶某处有一台钟在走，越走越快，越追越近，最后一下落在你的后颈上，不重，像谁用笔杆敲了敲出勤卡。再抬眼，你已经站在卖场中央，两手空空，连走廊里的一粒灰都没能带回来。值班经理从后仓踱出来，看见你，轻轻叹了口气，那口气里没有怒意，只有登记的倦怠。它翻开在岗名单，在你的名字后面写：脱班，按旷工处理。笔尖顿了顿，又补一行小字：旷工满一夜，视为自愿离职，予以注销。广播随即响起，语调愉快。你低头看自己的手，指纹正在一笔一笔变浅，像被橡皮擦过的铅笔印。柜台边的打卡机咔哒一声，吐出一小截纸：出勤栏里，你这一夜的姓名栏是空的。",
+      "ruleViolated": "R12"
+    },
+    "end_call_police": {
+      "type": "death",
+      "title": "出警",
+      "text": "柜台电话在响。你抓起听筒，还没来得及拨号，那头就通了，像这通电话已经被人等了很久。报警，这是你还能想到的唯一一件属于正常世界的事。听筒里是一个女声，温柔，清晰，训练有素：“请描述您遇到的歹徒。”你开始描述：他先动嘴角再动眼睛；他发放过塑的守则；他撕下自己的脸，下面还有一张，每一张都在微笑。你说得越来越快，听筒里的呼吸始终均匀，像在核对笔录。说到一半，店门开了，两名“警察”走进来，制服笔挺，帽檐压得很低。他们没有看你，先进卖场清点货架，逐排逐格，动作与盘点无异，然后才走到收银台前，翻开一本厚厚的登记簿。“报案人一并回收，以保护现场。”离你近的那位说，公事公办。你被夹进登记簿的两页之间，纸页合拢时，你听见自己的名字被盖了一个章，印得很正：情况属实。正门在它们身后敞开，门外是亮得发白的永昼。柜台上，电话听筒晃了两下，安安静静地挂了回去。",
+      "ruleViolated": "特殊"
+    },
+    "end_flee_front": {
+      "type": "death",
+      "title": "白昼",
+      "text": "你抄起收银台边的灭火器，砸向正门。玻璃碎裂的声音格外清脆，像一声口哨。你冲了出去。外面的光比店里还要亮，亮得没有层次：街道笔直，橱窗明亮，行人影影绰绰，因为他们全都没有影子。你跑起来，鞋底敲在人行道上，回声比脚步多出一记。阳光落在皮肤上没有温度，更像灯光，不像太阳。你回头看，便利店还在原地；再看，它在退——整条街在退，它平稳地退向地平线后面，招牌灯箱依旧亮如正午。你继续跑，跑到傍晚——如果这条街真的有傍晚。街对面的橱窗里多了一具体态奔跑的人体模型，姿势舒展，重心前倾，那身衣服你还认得。玻璃里侧贴着一张手写的价格牌，射灯打得很暖，把每个字照得清清楚楚：样品，非卖品。橱窗的灯光把模型脸上的漆照得微微发亮，那是这条街上唯一还留着影子的一件商品，影子朝前扑着，保持奔跑的姿势，怎么也追不上橱窗里的光。",
+      "ruleViolated": "特殊"
+    },
+    "end_greed": {
+      "type": "death",
+      "title": "找零",
+      "text": "阿婆把小费袋塞进你手里的时候，眼神像在还一笔记不清的愿。袋子入手沉得反常，里面全是磨得发亮的旧硬币，边缘圆钝，看得出被许多只手摩挲过许多年。守则第9条钉在那里：顾客永远是对的。顾客要给，你没有一条守则可以拿来拒绝。你收下了。第一枚硬币滑进掌心时，收银机轻轻响了一声，像在记账；你每收一枚，它响一声，不紧不慢，和你数硬币的节奏严丝合缝。你没有在意，直到想把袋子放回柜台——放不下了。那些硬币沉进你的口袋，沉过口袋的底，沉进你的身体，一枚一枚在里面排好了队，凉意贴着骨头。你的轮廓开始变得又圆又硬，边缘磨出金属的弧度，喉咙里滚出来的字，一个个都带着叮的尾音。出门前你把袋子掂了掂：袋子轻了，你重了。次日清点零钱格，值班经理多找出一枚新硬币，币面是一张侧脸，眉眼有些像你，币身还温着，像刚从谁滚烫的手心里退出来。",
+      "ruleViolated": "特殊"
+    },
+    "end_fake_sleep": {
+      "type": "death",
+      "title": "装睡的人",
+      "text": "墙那边的声音正在换人，你不敢睁眼，也不敢不应。守则第8条只给过两个位置：睡着，或者醒着。你选了个中间值——侧躺，面壁，把鼾声打得均匀又专业，节奏模仿老周白天的哈欠，起伏拿捏得像店里循环播放的音乐。声音停了。它没有走。折叠床边传来布料摩擦的窸窣，它蹲了下来，饶有兴致地看了很久，久到你不得不中途换气三次。“睡着的人，”它终于开口，声音贴着你的耳廓，“眉毛不会用力。”你这才意识到自己的眉头从叫名开始就一直拧着，此刻想松开，肌肉已经不听使唤了。它伸手掀开你盖得严严实实的被子，动作干脆，像收走一件以次充好的退货——标签朝外，折痕齐整。你没有坠落。你和床板之间长出了新的缝线，帆布认下了你的形状，弹簧学会了你的呼吸。老周后来夜夜睡在另一张床上，不是因为怕，是这张床靠上去太凉了，凉得像整个夜班都睡在它的褶皱里。",
+      "ruleViolated": "特殊"
+    },
+    "end_mirror": {
+      "type": "death",
+      "title": "另一面",
+      "text": "员工通道的尽头有间洗手间，洗手间里有一面镜子。守则第10条的第一句话你背得出：本店没有镜子。可你太需要确认一件事了——那半秒的卡壳，那双不眨的眼睛，影子里多出来的价签枪。你急需一面镜子告诉你，你还是你。你借口洗手，推门进去。镜子比印象里的旧，镀铬的边框掉了一角，镜面却干净得反常，连一粒水渍都没有。你抬手，想把额前的头发理一理。镜子里的人先抬了手。动作和你分毫不差，只是快了半拍——不，是你慢了半拍。你想后退，脚跟钉在地砖上；想闭眼，守则说过不要看清它，可你已经看清了：那不是你的脸，那是你的脸被人很仔细地研究过之后，重新做出来的版本。灯管嗡了一声。你最后看见的，是自己伸向毛巾架的背影。现在换你在里面了。雾气漫上来的时候，你抬起袖口，一下，一下，把镜面擦干净，等下一个想确认自己还是自己的店员推门进来。毛巾架上叠着两条毛巾，一直没有人来取。",
+      "ruleViolated": "特殊"
+    },
+    "end_trust_faker": {
+      "type": "death",
+      "title": "一字不差",
+      "text": "他“更正”守则时的语气太诚恳了，诚恳得像一位真正带过新人的前辈。第12条要经天台绕行，第3条要闭眼拿货，他一条一条讲，连标点的停顿都替你标好了。你道了谢，把“更正版”逐条背下来，背得很顺，顺得连你自己都有点得意。他领着你走进2与4之间的空档。货架深处比想象里更深，两侧的袋子在灯下泛着蜡光。他不许你开灯，也不许你睁眼，说要凭手感，拿到什么就是什么。你的指尖刚碰到第一只袋子，有什么东西贴上了你的手背，凉凉的，硬硬的，咔哒一声。是价签枪。你睁开眼，看见他站在灯下，正温柔地复述守则，一字不差，连标点的停顿都对——第1条，第2条，第3条，每一条都和你背的那一版分毫不差。他一边背，一边给你打价签，动作熟练，像已经做过很多遍。守则里没有一条教过怎么给人标价，可他背得那么顺，顺得让人疑心这是第13条。你手背上的签很小，你费了点力气才看清上面的数字：33.3。",
+      "ruleViolated": "特殊"
+    },
+    "end_freezer_open": {
+      "type": "death",
+      "title": "保质期",
+      "text": "霜层上冻出的“几点”两个字已经很实了，笔画边缘挂着细小的冰碴。你听了太久，终于伸手拉开了冷柜的门。守则第4条给过两句完整的叮嘱：无论里面传出什么声音，都不要回应，更不要打开。你打开了。白气涌出来，扑了你一脸，凉得很干净。前任店长就坐在里面，姿势端正，膝上摊着一条薄毯，手里握着一把价签枪。店长抬头看你，眼神里没有恶意，只有一种上了发条的准时。“你迟到了。”店长说。你想解释这不是你的班，话没出口，第一枚签已经贴上了你的袖口，动作利落，像做了很多年。第二枚贴在胸口，第三枚贴上工牌，把照片整个盖住。你发现自己动不了——不是被按住的那种动不了，是货架上的东西特有的那种安分。店长把你往里挪了挪，垫好毯子，柜门重新合拢，霜花从四壁慢慢合围。敲击声又响起来了，三长，两短，一丝不乱。只是从今晚起，敲的是你，应的也是你，你分不清声音是从柜里传出去的，还是从柜外传进来的。柜门把手上结了一层新霜，握上去的轮廓，是一只手的形状。",
+      "ruleViolated": "特殊"
+    },
+    "end_rooftop": {
+      "type": "death",
+      "title": "日不落",
+      "text": "员工通道的尽头有一道铁梯，梯口钉着一块手写的牌子：天台。你推门上去，只想透一口气。天台没有天空。头顶三米处悬着一块巨大的灯板，把整片地面照得纤毫毕现，灯板正中一团最亮的光斑，权当太阳。它不移动，不闪烁，也不落下去，把每一寸影子都压得很短。你在栏杆边站了一会儿，汗从后颈往下走，衣服贴在背上。这里安静得反常，连卖场的广播都传不上来。你朝那团光斑走了几步，想看看它到底是什么。影子先一步烧没了——脚边干干净净，像有人替你把身上最后一点黑夜也收走了。你低头找影子的时候，膝盖开始发亮，亮得很温和，像灯丝在预热。次日盘点，值班经理拿着本子巡到灯板下方，仰头记了一笔：设备正常，光照均匀。灯板的边角上多出一小片云影，蜷着，像一个人抱着膝盖。它看了很久，满意地在小本子上补了一句：这朵云的形状，很有员工的样子。",
+      "ruleViolated": "特殊"
+    },
+    "end_perfect_clerk": {
+      "type": "assimilation",
+      "title": "完美店员",
+      "text": "值班经理为你别上那枚小小的星形贴章时，动作很郑重，像在授予一枚勋章。“月度之星，”它说，“欢迎转正。”你想起自己在合同落款签下的四个字：自愿留任。字迹端正，没有涂改，连你都觉得不像自己写的。起初什么也没有变，只是好用了：你闭着眼也能摸到每件商品的条码，广播还没响你就知道它要放什么，守则十二条长进了骨头里，你不再需要想它，它替你想。后来你开始忘记一些不重要的事：你来之前欠的债，欠债的原因，欠债之外的日子。这些账目一样一样从你身上摘下去，轻得很，你甚至觉得清爽。再后来，微笑跑到脸上比任何情绪都快，嘴角先动，眼睛慢了半拍——你觉得这个顺序才是对的。交接那晚你的流程零失误，在岗名单上你的名字后面多了一颗打印出来的星，从今夜起，它永远在册。下一个新员工推门进来的时候，你迎上去，微笑，递上过塑的守则，逐条复述，一字不错。他问前辈以前是做什么的，你微笑着，从第1条开始又背了一遍。胸前的星章反着光，亮得像一枚刚打好的价签。",
+      "ruleViolated": "无"
+    },
+    "end_last_customer": {
+      "type": "assimilation",
+      "title": "最后一位顾客",
+      "text": "你想到了一个完美的漏洞：守则约束的是店员，而顾客永远是对的，顾客可以随时离店。你把自己的工牌放上扫码台，替自己结了账。扫码枪轻响，收银机打出一张小票，品名一栏是你的名字，类别一栏印着：顾客。值班经理在柜台后朝你欠身：“欢迎下次光临。”语气真诚——你现在是它不能拒绝的人。你推着购物车往门口走，货架却一座接一座排开去，像特意为你延长的跑道。路过关东煮，你拿了一份；路过冷柜，你拿了一瓶；每拿一件，小票就自己长出一行，你的名字在纸面上越排越满。你走到正门前才发现，门已经温柔地融进墙壁，摸上去是一整面光滑的墙。你没有慌。顾客不用交班，顾客不受守则约束，顾客想去哪一排就去哪一排。你在货架间慢慢走，先忘了要买什么，再忘了要出门，最后忘了推着车的这只手是谁的。这家店从不打烊，而你是它最后一位顾客，最耐心，最忠诚，每一次清点都稳稳在册。购物车的轮子被磨得很亮，在地砖上划出一条走不完的圆。",
+      "ruleViolated": "无"
+    },
+    "end_shelved": {
+      "type": "assimilation",
+      "title": "新品上架",
+      "text": "价签贴上来的时候几乎带着体温，像一只手在你背后轻轻按了一下。品名一栏是你的名字，字迹工整；保质期一栏写着“永久”，墨很足。你想提出异议，账本哗哗地翻到你那一页，停住，上面只有两个字：在库。包装先收走你的重量：脚尖离地，膝盖并拢，肩胛收进规定的弧度，货架的挂钩替你省去了站立的麻烦。然后收走你的时间：灯永远亮着，你不再需要分白天黑夜，只需要记得补货的日子。然后收走你的话：想喊的那几个字在喉咙里一层层变薄，最后薄成一层塑料膜，贴着内壁，出不来。你还剩一样东西——晃动。灯光很稳，挂钩很稳，只有你能动。3号货架正对着卖场的入口，新员工困惑的脸就在对面。他盯了你好一会儿，终于伸出手来。你把全身的分量都用在这一次摆动上，朝他，又朝他。他的手指停在半空，收了回去，转身去取别的货。你挂在最显眼的位置，端正，安静，是这一排里唯一还会动的一件。",
+      "ruleViolated": "无"
+    },
+    "end_true": {
+      "type": "true",
+      "title": "03:34",
+      "text": "你把七份证据一件一件摆上结算台：写着人名的价签，背面印着“谎”的小票，写满铅笔道歉的名单，那张检修单，七枚旧工牌，柜台下积了厚厚一沓的小票箱，最后是没有电池仓的时钟。进货单压在最上面，品名一栏印着“夜班店员×1”，你的指纹清晰。初版守则摊开在旁边，第3条和第7条后来贴上去的纸页在核算的白光里慢慢卷边、剥落，露出底下手写的原文。收银机算了很久，久到你能听见账本翻页的声音，一声，又一声，像有人在深夜里逐笔核对。然后它打出一张单子，字很大：账实不符，交易无效，本单全额退还。时钟咔的一声，秒针离开03:33，走向一个从未出现过的刻度。03:34。全店的灯在同一瞬熄灭。黑暗只有三秒，是检修单答应过的三秒。你在黑暗里闭上了眼——这一整夜以来第一次，没有任何东西在看你。灯还没亮，你已经推开安全门走了出去。门外是真正的黎明，天边一层薄薄的灰蓝，空气凉得有形状，你的影子在晨光里拉得很长，完完整整，一步不落。身后，冷柜的门自己开了，秦守时裹着薄毯走出来，理了理工牌，朝收银台走去，接回自己的班。你把那张背面印着“谎”的小票叠好，放进口袋。晨光落在纸面上，那个字正在慢慢褪色，褪成很浅很浅的粉，像一句终于不必兑现的话。",
+      "ruleViolated": "无"
+    }
+  }
+}/*__GAME_DATA_END__*/;
+
+// ===== DATA =====
+const META = GAME_DATA.meta;
+const FORMULAS = GAME_DATA.formulas;
+const NODES = GAME_DATA.nodes;
+const ENDINGS = GAME_DATA.endings;
+const RULES = GAME_DATA.rules;
+const FLAGS = GAME_DATA.flags;
+const RULE_MAP = {};
+RULES.forEach(function (r) { RULE_MAP[r.id] = r; });
+
+const STORAGE_KEY = 'ycbld_endings_v1';
+const TYPE_LABELS = { death: '死亡结局', assimilation: '同化结局', true: '真结局' };
+
+const Store = {
+  mem: {},
+  available: (function () {
+    try {
+      const probe = '__ycbld_probe__';
+      window.localStorage.setItem(probe, '1');
+      window.localStorage.removeItem(probe);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  })(),
+  read: function () {
+    if (this.available) {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') return parsed;
+        }
+      } catch (err) { /* 读档失败则降级内存档 */ }
+    }
+    const copy = {};
+    Object.keys(this.mem).forEach(function (k) { copy[k] = Store.mem[k]; });
+    return copy;
+  },
+  write: function (data) {
+    this.mem = data;
+    if (this.available) {
+      try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (err) { /* 写档失败保留内存档 */ }
+    }
+  }
+};
+
+// ===== ENGINE（纯函数）=====
+function engineClone(value) { return JSON.parse(JSON.stringify(value)); }
+function engineClamp(v, lo, hi) { if (v < lo) return lo; if (v > hi) return hi; return v; }
+
+function initialState() {
+  return {
+    node: META.startNode,
+    san: FORMULAS.sanInit,
+    assim: FORMULAS.assimInit,
+    flags: {},
+    clues: [],
+    visited: [],
+    turns: 0
+  };
+}
+
+function engineAddFlag(state, id) {
+  state.flags[id] = true;
+  const def = FLAGS[id];
+  if (def && def.kind === 'clue' && state.clues.indexOf(id) < 0) state.clues.push(id);
+}
+
+/* 结算顺序：进入节点 -> onEnter -> 强制结局（san 归零 / 同化打满） */
+function resolveEnter(inputState) {
+  const s = engineClone(inputState);
+  if (!s.flags || typeof s.flags !== 'object') s.flags = {};
+  if (!Array.isArray(s.clues)) s.clues = [];
+  if (!Array.isArray(s.visited)) s.visited = [];
+  if (typeof s.san !== 'number') s.san = FORMULAS.sanInit;
+  if (typeof s.assim !== 'number') s.assim = FORMULAS.assimInit;
+  const node = NODES[s.node];
+  if (!node) {
+    if (ENDINGS[s.node]) return { type: 'ending', endingId: s.node };
+    return { type: 'node', state: s };
+  }
+  if (s.visited.indexOf(s.node) < 0) s.visited.push(s.node);
+  const onEnter = node.onEnter || {};
+  s.san = engineClamp(s.san + (onEnter.san || 0), FORMULAS.sanMin, FORMULAS.sanMax);
+  s.assim = engineClamp(s.assim + (onEnter.assim || 0), FORMULAS.assimMin, FORMULAS.assimMax);
+  (onEnter.setFlags || []).forEach(function (id) { engineAddFlag(s, id); });
+  (onEnter.clues || []).forEach(function (id) { engineAddFlag(s, id); });
+  if (s.san <= FORMULAS.sanMin) return { type: 'ending', endingId: META.sanZeroEndingId };
+  if (s.assim >= FORMULAS.assimMax) return { type: 'ending', endingId: META.assimFullEndingId };
+  return { type: 'node', state: s };
+}
+
+function choiceMeetsRequires(req, state) {
+  if (!req) return true;
+  if (typeof req.sanMin === 'number' && state.san < req.sanMin) return false;
+  if (typeof req.sanMax === 'number' && state.san > req.sanMax) return false;
+  if (typeof req.assimMin === 'number' && state.assim < req.assimMin) return false;
+  if (typeof req.assimMax === 'number' && state.assim > req.assimMax) return false;
+  if (typeof req.cluesMin === 'number' && state.clues.length < req.cluesMin) return false;
+  if (Array.isArray(req.flags)) {
+    for (let i = 0; i < req.flags.length; i++) {
+      if (!state.flags[req.flags[i]]) return false;
+    }
+  }
+  if (Array.isArray(req.notFlags)) {
+    for (let i = 0; i < req.notFlags.length; i++) {
+      if (state.flags[req.notFlags[i]]) return false;
+    }
+  }
+  return true;
+}
+
+/* 选项过滤：不满足 requires 的选项不出现 */
+function getAvailableChoices(state) {
+  const node = NODES[state.node];
+  if (!node || !Array.isArray(node.choices)) return [];
+  return node.choices.filter(function (c) { return choiceMeetsRequires(c.requires, state); });
+}
+
+/* 结算顺序：effects -> goto（若 goto 是结局则直接终局，否则进入新节点并走 resolveEnter） */
+function applyChoice(state, choiceId) {
+  const node = NODES[state.node];
+  if (!node || !Array.isArray(node.choices)) return { type: 'node', state: engineClone(state) };
+  let choice = null;
+  for (let i = 0; i < node.choices.length; i++) {
+    if (node.choices[i].id === choiceId) { choice = node.choices[i]; break; }
+  }
+  if (!choice) return { type: 'node', state: engineClone(state) };
+  const s = engineClone(state);
+  const ef = choice.effects || {};
+  s.san = engineClamp(s.san + (ef.san || 0), FORMULAS.sanMin, FORMULAS.sanMax);
+  s.assim = engineClamp(s.assim + (ef.assim || 0), FORMULAS.assimMin, FORMULAS.assimMax);
+  (ef.setFlags || []).forEach(function (id) { engineAddFlag(s, id); });
+  (ef.clues || []).forEach(function (id) { engineAddFlag(s, id); });
+  s.turns = (s.turns || 0) + 1;
+  if (ENDINGS[choice.goto]) return { type: 'ending', endingId: choice.goto };
+  s.node = choice.goto;
+  return resolveEnter(s);
+}
+
+// ===== UI（DOM 渲染与事件）=====
+const UI = {};
+const Timers = {
+  ids: [],
+  setTimeout: function (fn, ms) { const id = window.setTimeout(fn, ms); this.ids.push(id); return id; },
+  setInterval: function (fn, ms) { const id = window.setInterval(fn, ms); this.ids.push(id); return id; },
+  clearAll: function () {
+    this.ids.forEach(function (id) { window.clearTimeout(id); window.clearInterval(id); });
+    this.ids = [];
+  }
+};
+
+/* Zalgo 组合附加符：从 U+0300 至 U+036F 取样 16 个 */
+const ZALGO_MARKS = (function () {
+  const out = [];
+  const start = 0x0300;
+  const span = 0x036F - 0x0300;
+  for (let i = 0; i < 16; i++) out.push(start + Math.round(i * span / 15));
+  return out;
+})();
+function zalgoIntensity() {
+  if (!UI.state) return 0;
+  const below = META.sanGlitchBelow - UI.state.san;
+  if (below <= 0) return 0;
+  return below / META.sanGlitchBelow;
+}
+function zalgoChar(ch) {
+  const t = zalgoIntensity();
+  if (t <= 0 || /\s/.test(ch)) return ch;
+  if (Math.random() > 0.42 * t) return ch;
+  let s = '';
+  const n = 1 + Math.floor(Math.random() * 3);
+  for (let i = 0; i < n; i++) s += String.fromCharCode(ZALGO_MARKS[Math.floor(Math.random() * ZALGO_MARKS.length)]);
+  return ch + s;
+}
+
+/* 打字机：逐段逐字输出，点击跳过当前段落 */
+const TypeWheel = {
+  paras: [], idx: 0, pos: 0, el: null, timer: null, pendingTimeout: null,
+  box: null, onAllDone: null, active: false, speed: 26,
+  start: function (paragraphs, boxEl, onAllDone, speed) {
+    this.stop();
+    this.paras = paragraphs.slice();
+    this.idx = 0;
+    this.box = boxEl;
+    this.onAllDone = onAllDone;
+    this.active = true;
+    if (typeof speed === 'number') this.speed = speed;
+    boxEl.textContent = '';
+    this.startPara();
+  },
+  startPara: function () {
+    const p = document.createElement('p');
+    p.className = 'story-para';
+    this.box.appendChild(p);
+    this.el = p;
+    this.pos = 0;
+    const self = this;
+    this.timer = Timers.setInterval(function () { self.tick(); }, this.speed);
+  },
+  tick: function () {
+    if (!this.active) return;
+    const text = this.paras[this.idx];
+    if (this.pos >= text.length) { this.paraDone(); return; }
+    this.el.appendChild(document.createTextNode(zalgoChar(text[this.pos])));
+    this.pos += 1;
+    this.scrollBox();
+  },
+  paraDone: function () {
+    if (this.timer !== null) { window.clearInterval(this.timer); this.timer = null; }
+    this.idx += 1;
+    if (this.idx >= this.paras.length) {
+      this.active = false;
+      const cb = this.onAllDone;
+      this.onAllDone = null;
+      if (cb) cb();
+      return;
+    }
+    const self = this;
+    this.pendingTimeout = window.setTimeout(function () {
+      self.pendingTimeout = null;
+      if (self.active) self.startPara();
+    }, 380);
+  },
+  skipCurrent: function () {
+    if (!this.active) return;
+    if (this.timer === null) {
+      if (this.pendingTimeout !== null) {
+        window.clearTimeout(this.pendingTimeout);
+        this.pendingTimeout = null;
+        this.startPara();
+      }
+      return;
+    }
+    const text = this.paras[this.idx];
+    let rest = '';
+    while (this.pos < text.length) { rest += zalgoChar(text[this.pos]); this.pos += 1; }
+    if (rest) this.el.appendChild(document.createTextNode(rest));
+    this.scrollBox();
+    this.paraDone();
+  },
+  scrollBox: function () {
+    if (UI.story) UI.story.scrollTop = UI.story.scrollHeight;
+  },
+  stop: function () {
+    this.active = false;
+    if (this.timer !== null) { window.clearInterval(this.timer); this.timer = null; }
+    if (this.pendingTimeout !== null) { window.clearTimeout(this.pendingTimeout); this.pendingTimeout = null; }
+  }
+};
+
+function byId(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error('缺失元素: ' + id);
+  return el;
+}
+
+function switchScreen(name) {
+  const map = { title: 'screen-title', game: 'screen-game', ending: 'screen-ending' };
+  Object.keys(map).forEach(function (k) {
+    byId(map[k]).classList.toggle('active', k === name);
+  });
+}
+
+function updateStatusbar(state) {
+  UI.sanNum.textContent = String(state.san);
+  UI.assimNum.textContent = String(state.assim);
+  UI.barSan.style.width = state.san + '%';
+  UI.barAssim.style.width = state.assim + '%';
+  UI.barSan.classList.remove('ok', 'warn', 'bad');
+  if (state.san < META.sanGlitchBelow) UI.barSan.classList.add('bad');
+  else if (state.san > FORMULAS.sanMax * 0.6) UI.barSan.classList.add('ok');
+  else UI.barSan.classList.add('warn');
+  UI.sanBlock.classList.toggle('critical', state.san < META.sanGlitchBelow);
+  const shifted = state.assim >= FORMULAS.assimWorldShiftAt;
+  UI.staffHint.classList.toggle('visible', shifted);
+  if (shifted) UI.staffHint.textContent = '店员匹配度 ' + state.assim + '%';
+  UI.clueCount.textContent = state.clues.length + '/' + FORMULAS.clueGoal;
+}
+
+function setupWorldWhispers() {
+  if (UI.state.assim < FORMULAS.assimWorldShiftAt) return;
+  Timers.setInterval(function () { spawnWorldWhisper(); }, 9000);
+}
+function spawnWorldWhisper() {
+  const list = META.worldShiftWhispers || [];
+  if (!list.length) return;
+  const el = document.createElement('p');
+  el.className = 'world-whisper';
+  el.textContent = list[Math.floor(Math.random() * list.length)];
+  el.style.top = (12 + Math.floor(Math.random() * 40)) + '%';
+  UI.whisperLayer.appendChild(el);
+  Timers.setTimeout(function () {
+    if (el.parentNode) el.parentNode.removeChild(el);
+  }, 6200);
+}
+
+function renderChoices(state) {
+  UI.choices.textContent = '';
+  const list = getAvailableChoices(state);
+  list.forEach(function (c, i) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'choice-btn';
+    b.textContent = (i + 1) + '. ' + c.text;
+    b.addEventListener('click', function () { handleChoice(c.id); });
+    UI.choices.appendChild(b);
+  });
+  UI.story.scrollTop = UI.story.scrollHeight;
+}
+
+function finishNodeReveal(node) {
+  if (node.whisper) {
+    UI.whisperLine.textContent = node.whisper;
+    UI.whisperLine.classList.add('show');
+  }
+  renderChoices(UI.state);
+}
+
+function renderNode(state) {
+  const node = NODES[state.node];
+  if (!node) return;
+  UI.state = state;
+  Timers.clearAll();
+  UI.whisperLayer.textContent = '';
+  switchScreen('game');
+  updateStatusbar(state);
+  UI.ambientLine.textContent = node.ambient || '';
+  UI.ambientLine.classList.remove('show');
+  void UI.ambientLine.offsetWidth;
+  UI.ambientLine.classList.add('show');
+  UI.whisperLine.classList.remove('show');
+  UI.whisperLine.textContent = '';
+  UI.story.classList.toggle('san-glitch', state.san < META.sanGlitchBelow);
+  TypeWheel.start(node.text, UI.paraBox, function () { finishNodeReveal(node); });
+  setupWorldWhispers();
+}
+
+function handleChoice(choiceId) {
+  const res = applyChoice(UI.state, choiceId);
+  if (res.type === 'ending') { showEnding(res.endingId); return; }
+  renderNode(res.state);
+}
+
+function showEnding(endingId) {
+  const e = ENDINGS[endingId];
+  if (!e) return;
+  Timers.clearAll();
+  TypeWheel.stop();
+  UI.whisperLayer.textContent = '';
+  UI.state = null;
+  recordEnding(endingId);
+  switchScreen('ending');
+  UI.endScreen.classList.remove('ending-death', 'ending-assim', 'ending-true');
+  if (e.type === 'death') UI.endScreen.classList.add('ending-death');
+  else if (e.type === 'assimilation') UI.endScreen.classList.add('ending-assim');
+  else UI.endScreen.classList.add('ending-true');
+  UI.endTypeTag.textContent = TYPE_LABELS[e.type] || '结局';
+  UI.endTitle.textContent = e.title;
+  UI.endRule.textContent = '';
+  const rule = RULE_MAP[e.ruleViolated];
+  if (e.type === 'death' && rule) {
+    UI.endRule.style.display = '';
+    const tag = document.createElement('span');
+    tag.className = 'rule-tag';
+    tag.textContent = '已违反守则 ' + rule.id;
+    UI.endRule.textContent = '';
+    UI.endRule.appendChild(tag);
+    UI.endRule.appendChild(document.createTextNode(rule.text));
+  } else {
+    UI.endRule.style.display = 'none';
+  }
+  UI.endText.textContent = '';
+  TypeWheel.start([e.text], UI.endText, null, 18);
+}
+
+function recordEnding(endingId) {
+  const data = Store.read();
+  if (!data[endingId]) data[endingId] = new Date().toISOString();
+  Store.write(data);
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+function renderGallery() {
+  const data = Store.read();
+  const ids = Object.keys(ENDINGS);
+  let got = 0;
+  UI.galleryGrid.textContent = '';
+  ids.forEach(function (id) {
+    const e = ENDINGS[id];
+    const cell = document.createElement('div');
+    cell.className = 'gallery-cell';
+    if (data[id]) {
+      got += 1;
+      cell.classList.add('achieved', 't-' + e.type);
+      const t = document.createElement('p');
+      t.className = 'g-title';
+      t.textContent = e.title;
+      const k = document.createElement('p');
+      k.className = 'g-type';
+      k.textContent = TYPE_LABELS[e.type] || '结局';
+      const d = document.createElement('p');
+      d.className = 'g-date';
+      d.textContent = formatDate(data[id]);
+      cell.appendChild(t); cell.appendChild(k); cell.appendChild(d);
+    } else {
+      cell.classList.add('locked');
+      const t = document.createElement('p');
+      t.className = 'g-title';
+      t.textContent = '？？？';
+      cell.appendChild(t);
+    }
+    UI.galleryGrid.appendChild(cell);
+  });
+  UI.gallerySub.textContent = '已达成 ' + got + ' / ' + ids.length + ' 种结局';
+}
+
+function renderNotepad() {
+  const state = UI.state;
+  const visited = (state && Array.isArray(state.visited)) ? state.visited : [];
+  const body = UI.notepadBody;
+  body.textContent = '';
+
+  /* 员工守则 */
+  const secRule = document.createElement('div');
+  secRule.className = 'notepad-sec';
+  const h4r = document.createElement('h4');
+  let unlockedCount = 0;
+  RULES.forEach(function (r) { if (visited.indexOf(r.revealNode) >= 0) unlockedCount += 1; });
+  h4r.textContent = '员工守则（已解锁 ' + unlockedCount + ' / ' + RULES.length + '）';
+  secRule.appendChild(h4r);
+  RULES.forEach(function (r) {
+    const unlocked = visited.indexOf(r.revealNode) >= 0;
+    const row = document.createElement('div');
+    row.className = 'rule-row' + (unlocked ? '' : ' locked');
+    const idTag = document.createElement('span');
+    idTag.className = 'rule-id';
+    idTag.textContent = r.id;
+    row.appendChild(idTag);
+    if (unlocked) {
+      const txt = document.createElement('p');
+      txt.className = 'rule-text';
+      txt.textContent = r.text;
+      row.appendChild(txt);
+      (r.conflictWith || []).forEach(function (other) {
+        const chip = document.createElement('span');
+        chip.className = 'conflict-chip';
+        chip.textContent = '与 ' + other + ' 冲突';
+        row.appendChild(chip);
+      });
+    } else {
+      const txt = document.createElement('p');
+      txt.className = 'rule-text';
+      txt.textContent = '？？？';
+      row.appendChild(txt);
+    }
+    secRule.appendChild(row);
+  });
+  body.appendChild(secRule);
+
+  /* 线索 */
+  const secClue = document.createElement('div');
+  secClue.className = 'notepad-sec';
+  const h4c = document.createElement('h4');
+  h4c.textContent = '矛盾线索（' + (state ? state.clues.length : 0) + ' / ' + FORMULAS.clueGoal + '）';
+  secClue.appendChild(h4c);
+  Object.keys(FLAGS).forEach(function (id) {
+    const def = FLAGS[id];
+    if (def.kind !== 'clue') return;
+    const got = state && state.flags[id];
+    const row = document.createElement('div');
+    row.className = 'clue-row' + (got ? '' : ' locked');
+    if (got) {
+      const name = document.createElement('p');
+      name.className = 'clue-name';
+      name.textContent = def.name;
+      const desc = document.createElement('p');
+      desc.className = 'clue-desc';
+      desc.textContent = def.desc;
+      row.appendChild(name); row.appendChild(desc);
+    } else {
+      const name = document.createElement('p');
+      name.className = 'clue-name';
+      name.textContent = '？？？';
+      row.appendChild(name);
+    }
+    secClue.appendChild(row);
+  });
+  body.appendChild(secClue);
+
+  /* 物品 */
+  const secItem = document.createElement('div');
+  secItem.className = 'notepad-sec';
+  const h4i = document.createElement('h4');
+  h4i.textContent = '随身物品';
+  secItem.appendChild(h4i);
+  let itemCount = 0;
+  Object.keys(FLAGS).forEach(function (id) {
+    const def = FLAGS[id];
+    if (def.kind !== 'item' && def.kind !== 'major') return;
+    if (!(state && state.flags[id])) return;
+    itemCount += 1;
+    const row = document.createElement('div');
+    row.className = 'clue-row';
+    const name = document.createElement('p');
+    name.className = 'clue-name';
+    const kind = document.createElement('span');
+    kind.className = 'item-kind' + (def.kind === 'major' ? ' major' : '');
+    kind.textContent = def.kind === 'major' ? '关键' : '物品';
+    name.appendChild(kind);
+    name.appendChild(document.createTextNode(def.name));
+    const desc = document.createElement('p');
+    desc.className = 'clue-desc';
+    desc.textContent = def.desc;
+    row.appendChild(name); row.appendChild(desc);
+    secItem.appendChild(row);
+  });
+  if (!itemCount) {
+    const empty = document.createElement('p');
+    empty.className = 'empty-line';
+    empty.textContent = '口袋里什么都没有。';
+    secItem.appendChild(empty);
+  }
+  body.appendChild(secItem);
+}
+
+function openModal(id) { byId(id).classList.add('open'); }
+function closeModal(id) { byId(id).classList.remove('open'); }
+function openGallery() { renderGallery(); openModal('modal-gallery'); }
+function openNotepad() { renderNotepad(); openModal('modal-notepad'); }
+
+function startNewGame() {
+  Timers.clearAll();
+  TypeWheel.stop();
+  const res = resolveEnter(initialState());
+  if (res.type === 'ending') { showEnding(res.endingId); return; }
+  renderNode(res.state);
+}
+
+function backToTitle() {
+  Timers.clearAll();
+  TypeWheel.stop();
+  UI.whisperLayer.textContent = '';
+  UI.state = null;
+  switchScreen('title');
+}
+
+function cacheDom() {
+  UI.sanNum = byId('san-num');
+  UI.assimNum = byId('assim-num');
+  UI.barSan = byId('bar-san');
+  UI.barAssim = byId('bar-assim');
+  UI.sanBlock = byId('san-block');
+  UI.staffHint = byId('staff-match-hint');
+  UI.clueCount = byId('clue-count');
+  UI.story = byId('story');
+  UI.ambientLine = byId('ambient-line');
+  UI.paraBox = byId('para-box');
+  UI.whisperLine = byId('whisper-line');
+  UI.whisperLayer = byId('whisper-layer');
+  UI.choices = byId('choices');
+  UI.endScreen = byId('screen-ending');
+  UI.endTypeTag = byId('end-type-tag');
+  UI.endTitle = byId('end-title');
+  UI.endRule = byId('end-rule');
+  UI.endText = byId('end-text');
+  UI.notepadBody = byId('notepad-body');
+  UI.galleryGrid = byId('gallery-grid');
+  UI.gallerySub = byId('gallery-sub');
+  UI.state = null;
+}
+
+function boot() {
+  cacheDom();
+  byId('btn-start').addEventListener('click', startNewGame);
+  byId('btn-gallery').addEventListener('click', openGallery);
+  byId('btn-gallery2').addEventListener('click', openGallery);
+  byId('btn-help').addEventListener('click', function () { openModal('modal-help'); });
+  byId('btn-notepad').addEventListener('click', openNotepad);
+  byId('btn-restart').addEventListener('click', function () { openModal('modal-confirm'); });
+  byId('btn-confirm-yes').addEventListener('click', function () { closeModal('modal-confirm'); startNewGame(); });
+  byId('btn-confirm-no').addEventListener('click', function () { closeModal('modal-confirm'); });
+  byId('btn-end-back').addEventListener('click', backToTitle);
+  byId('btn-close-notepad').addEventListener('click', function () { closeModal('modal-notepad'); });
+  byId('btn-close-gallery').addEventListener('click', function () { closeModal('modal-gallery'); });
+  byId('btn-close-help').addEventListener('click', function () { closeModal('modal-help'); });
+  const modals = document.querySelectorAll('.modal');
+  for (let i = 0; i < modals.length; i++) {
+    (function (m) {
+      m.addEventListener('click', function (ev) { if (ev.target === m) m.classList.remove('open'); });
+    })(modals[i]);
+  }
+  UI.story.addEventListener('click', function () { TypeWheel.skipCurrent(); });
+  UI.endText.addEventListener('click', function () { TypeWheel.skipCurrent(); });
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') {
+      const open = document.querySelectorAll('.modal.open');
+      for (let i = 0; i < open.length; i++) open[i].classList.remove('open');
+    }
+  });
+  switchScreen('title');
+}
+
+boot();
+</script>
+</body>
+</html>

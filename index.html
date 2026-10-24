@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="《永昼便利店：伪人规则怪谈》是一款由 AI 全自动制作的单文件规则怪谈文字游戏：12 条自相矛盾的员工守则、22 个剧情节点、24 种结局、7 份矛盾证据。收银台的时钟停在 03:33，天亮从不来——在账被结清之前，把自己退回去。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="永昼便利店">
+<meta property="og:title" content="永昼便利店 · 伪人规则怪谈 — AI 全自动制作的规则怪谈文字游戏">
+<meta property="og:description" content="一家灯火永远亮如白昼的便利店，一份自相矛盾的员工守则。12 条守则、24 种结局、7 份矛盾证据——看穿矛盾，用它的程序反杀它。单文件即开即玩。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="永昼便利店 · 伪人规则怪谈 — AI 全自动制作的规则怪谈文字游戏">
+<meta name="twitter:description" content="一家灯火永远亮如白昼的便利店，一份自相矛盾的员工守则。12 条守则、24 种结局、7 份矛盾证据——看穿矛盾，用它的程序反杀它。单文件即开即玩。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2304070a'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%239fe8c0' stroke-width='3'/%3E%3Cline x1='32' y1='32' x2='32' y2='17' stroke='%239fe8c0' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='32' y1='32' x2='43' y2='40' stroke='%23ff453a' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<title>永昼便利店 · 伪人规则怪谈 — AI 全自动制作的规则怪谈文字游戏</title>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoGame",
+  "name": "永昼便利店：伪人规则怪谈",
+  "alternateName": "Everlight Convenience Store: A Rules Horror Game",
+  "description": "单文件离线规则怪谈文字游戏：12 条互相矛盾的员工守则、22 个剧情节点、24 种结局、7 份矛盾证据，全部由 AI 多智能体流水线自动生成并通过确定性 QA 验证。",
+  "genre": ["规则怪谈", "文字冒险", "恐怖"],
+  "gamePlatform": "Browser",
+  "applicationCategory": "Game",
+  "operatingSystem": "Any",
+  "inLanguage": "zh-CN",
+  "datePublished": "2026-10-05",
+  "author": { "@type": "Organization", "name": "全自动怪谈游戏制作组" },
+  "numberOfPlayers": 1,
+  "playMode": "SinglePlayer",
+  "fileSize": "182KB"
+}
+</script>
+<style>
+:root{
+  --bg:#04070a;
+  --bg2:#070d12;
+  --panel:rgba(8,16,12,.55);
+  --panel2:rgba(10,20,15,.7);
+  --ink:#d6e4d9;
+  --dim:#8aa394;
+  --faint:#5a7266;
+  --accent:#9fe8c0;
+  --ok:#35d07f;
+  --warn:#ffb020;
+  --bad:#ff453a;
+  --line:rgba(159,232,192,.22);
+  --line2:rgba(159,232,192,.12);
+  --mono:"Cascadia Mono",Consolas,"SF Mono","Courier New",monospace;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  line-height:1.75;
+  overflow-x:hidden;
+}
+::selection{ background:rgba(159,232,192,.28); color:#eafff2; }
+a{ color:var(--accent); text-decoration:none; }
+img{ max-width:100%; display:block; }
+
+/* ===== 语言切换：根元素 data-lang 控制两种语言正文显隐 ===== */
+html[data-lang="zh"] [data-lang="en"],
+html[data-lang="en"] [data-lang="zh"]{ display:none !important; }
+
+/* 仅屏幕阅读器可见：glitch 装饰层的无障碍替代文本 */
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%);
+  white-space:nowrap; border:0;
+}
+
+/* ===== CRT 氛围层：极淡扫描线 + 暗角（可读性优先） ===== */
+#crt{ position:fixed; inset:0; pointer-events:none; z-index:900; }
+#crt::before{
+  content:""; position:absolute; inset:0;
+  background:repeating-linear-gradient(to bottom, rgba(3,7,5,.10) 0 1px, transparent 1px 5px);
+}
+#crt::after{
+  content:""; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(0,0,0,.42) 100%);
+}
+
+.wrap{ max-width:1060px; margin:0 auto; padding:0 22px; }
+
+/* ===== 顶栏 ===== */
+.site-head{
+  position:sticky; top:0; z-index:800;
+  background:rgba(4,7,10,.88);
+  backdrop-filter:blur(6px);
+  border-bottom:1px solid var(--line2);
+}
+.site-head .wrap{
+  display:flex; align-items:center; gap:18px;
+  min-height:60px;
+}
+.brand{
+  display:flex; align-items:center; gap:10px;
+  font-weight:700; letter-spacing:.12em; color:#e9f5ec; font-size:16px;
+  white-space:normal; line-height:1.3; min-width:0;
+}
+.brand .bulb{
+  width:10px; height:10px; border-radius:50%;
+  background:var(--accent);
+  box-shadow:0 0 10px rgba(159,232,192,.9), 0 0 22px rgba(159,232,192,.45);
+  animation:bulbpulse 3.4s ease-in-out infinite;
+  flex:none;
+}
+@keyframes bulbpulse{ 0%,100%{ opacity:1; } 50%{ opacity:.45; } }
+.site-nav{ display:flex; gap:4px; margin-left:auto; flex-wrap:wrap; }
+.site-nav a{
+  color:var(--dim); font-size:14px; letter-spacing:.08em;
+  padding:6px 12px; border:1px solid transparent; border-radius:4px;
+  transition:color .2s, border-color .2s;
+}
+.site-nav a:hover{ color:var(--accent); border-color:var(--line); }
+#lang-toggle{
+  flex:none;
+  font-family:var(--mono); font-size:13px; letter-spacing:.14em;
+  color:var(--accent); background:rgba(10,22,16,.7);
+  border:1px solid var(--line); border-radius:4px;
+  padding:7px 14px; cursor:pointer; white-space:nowrap;
+  transition:border-color .2s, box-shadow .2s;
+}
+#lang-toggle:hover{
+  border-color:var(--accent);
+  box-shadow:0 0 12px rgba(159,232,192,.25);
+}
+
+/* ===== Hero ===== */
+.hero{
+  position:relative;
+  min-height:calc(100vh - 60px);
+  display:flex; align-items:center;
+  padding:64px 0 72px;
+  background:
+    radial-gradient(ellipse 900px 480px at 50% -10%, rgba(159,232,192,.07), transparent 65%),
+    linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+  overflow:hidden;
+}
+.hero .wrap{
+  display:grid;
+  grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);
+  gap:48px; align-items:center;
+}
+.hero-eyebrow{
+  font-family:var(--mono); font-size:13px; letter-spacing:.32em;
+  color:var(--faint); margin-bottom:18px;
+}
+.hero-title{
+  font-weight:700; color:#e9f5ec;
+  font-size:clamp(44px, 8.2vw, 84px);
+  letter-spacing:.1em; line-height:1.12;
+  text-shadow:0 0 26px rgba(150,255,190,.2);
+}
+.hero-title .glitch[data-lang="en"]{
+  font-size:clamp(30px, 4.6vw, 54px);
+  letter-spacing:.04em; line-height:1.15;
+  display:block;
+}
+.glitch{ position:relative; display:inline-block; }
+.glitch::before,.glitch::after{
+  content:attr(data-text); position:absolute; left:0; top:0; width:100%;
+  opacity:.75; pointer-events:none; mix-blend-mode:screen;
+}
+.glitch::before{
+  color:#ff2d55; clip-path:inset(12% 0 58% 0);
+  animation:gl-a 3.1s steps(2) infinite;
+}
+.glitch::after{
+  color:#37c8ff; clip-path:inset(62% 0 8% 0);
+  animation:gl-b 4.3s steps(2) infinite;
+}
+@keyframes gl-a{
+  0%,86%,100%{ transform:translate(0,0); opacity:0; }
+  87%{ transform:translate(-3px,1px); opacity:.75; }
+  90%{ transform:translate(2px,-1px); opacity:.55; }
+  93%{ transform:translate(-2px,0); opacity:.7; }
+  96%{ transform:translate(0,0); opacity:0; }
+}
+@keyframes gl-b{
+  0%,78%,100%{ transform:translate(0,0); opacity:0; }
+  79%{ transform:translate(3px,-1px); opacity:.65; }
+  83%{ transform:translate(-2px,1px); opacity:.5; }
+  87%{ transform:translate(0,0); opacity:0; }
+}
+.hero-sub{
+  margin-top:14px;
+  font-size:clamp(17px, 2.4vw, 22px);
+  letter-spacing:.42em; color:var(--accent); font-weight:600;
+}
+.hero-sub [data-lang="en"]{ letter-spacing:.18em; }
+.hero-tagline{
+  margin-top:22px; max-width:560px;
+  color:var(--dim); font-size:16px;
+}
+.hero-tagline b{ color:var(--ink); font-weight:600; }
+.hero-cta{ display:flex; flex-wrap:wrap; gap:14px; margin-top:34px; }
+.btn{
+  display:inline-flex; align-items:center; gap:10px;
+  font-family:inherit; font-size:15px; letter-spacing:.12em;
+  padding:13px 26px; border-radius:4px; cursor:pointer;
+  border:1px solid var(--line); color:var(--ink);
+  background:rgba(10,22,16,.7);
+  transition:border-color .2s, box-shadow .2s, transform .2s, background .2s;
+}
+.btn:hover{
+  border-color:var(--accent);
+  box-shadow:0 0 16px rgba(159,232,192,.28), inset 0 0 12px rgba(159,232,192,.07);
+  transform:translateY(-2px);
+}
+.btn-primary{
+  background:linear-gradient(180deg, rgba(53,208,127,.2), rgba(53,208,127,.08));
+  border-color:rgba(53,208,127,.55); color:#c9f7dd;
+}
+.btn-primary:hover{ box-shadow:0 0 20px rgba(53,208,127,.35), inset 0 0 14px rgba(53,208,127,.1); }
+.btn-ghost{ border-style:dashed; color:var(--dim); }
+.btn-ghost:hover{ color:var(--accent); }
+.hero-meta{
+  margin-top:26px; font-family:var(--mono); font-size:12px;
+  letter-spacing:.18em; color:var(--faint);
+}
+
+/* Hero 右侧：03:33 时钟 + 小票 */
+.hero-visual{ display:flex; flex-direction:column; align-items:center; gap:26px; }
+.clock{ text-align:center; }
+.clock-face{
+  width:min(190px, 44vw); aspect-ratio:1; border-radius:50%;
+  border:2px solid var(--line);
+  background:
+    radial-gradient(circle at 50% 42%, rgba(159,232,192,.08), transparent 62%),
+    rgba(6,12,9,.7);
+  position:relative;
+  box-shadow:0 0 34px rgba(159,232,192,.08), inset 0 0 24px rgba(0,0,0,.6);
+}
+.clock-face::before{
+  content:""; position:absolute; inset:8px; border-radius:50%;
+  border:1px dashed rgba(159,232,192,.14);
+}
+.tick{ position:absolute; left:50%; top:50%; width:2px; height:10px;
+  background:rgba(159,232,192,.35); transform-origin:50% 0;
+}
+.hand{ position:absolute; left:50%; bottom:50%;
+  border-radius:2px; transform-origin:50% 100%;
+}
+.hand.hour{ width:5px; height:26%; margin-left:-2.5px;
+  background:var(--accent); box-shadow:0 0 8px rgba(159,232,192,.6); }
+.hand.minute{ width:3px; height:38%; margin-left:-1.5px;
+  background:#ff7a70; box-shadow:0 0 8px rgba(255,69,58,.5); }
+.clock-digital{
+  margin-top:14px; font-family:var(--mono);
+  font-size:30px; letter-spacing:.22em; color:#e9f5ec;
+  text-shadow:0 0 14px rgba(159,232,192,.35);
+}
+.clock-digital .blink{ animation:colonblink 2s steps(1) infinite; }
+@keyframes colonblink{ 0%,100%{ opacity:1; } 50%{ opacity:.15; } }
+.clock-cap{
+  margin-top:6px; font-size:12px; letter-spacing:.3em;
+  color:var(--faint); font-family:var(--mono);
+}
+.price-tag{
+  transform:rotate(-3deg);
+  background:#f4f1e6; color:#26302a;
+  border:1px solid #cfc9b4;
+  padding:10px 18px 8px; font-family:var(--mono);
+  box-shadow:0 6px 18px rgba(0,0,0,.5);
+  text-align:center; line-height:1.5;
+  position:relative;
+}
+.price-tag::before{
+  content:""; position:absolute; left:50%; top:-7px; width:12px; height:12px;
+  margin-left:-6px; border-radius:50%;
+  background:var(--bg); border:1px solid #cfc9b4;
+}
+.price-tag .pt-name{ font-size:15px; letter-spacing:.3em; font-weight:700; }
+.price-tag .pt-price{ font-size:22px; font-weight:700; color:#a33327; }
+.price-tag .pt-life{ font-size:10px; letter-spacing:.2em; color:#6b7a6e; }
+
+/* ===== 通用 Section ===== */
+section.block{ padding:84px 0; border-top:1px solid var(--line2); position:relative; }
+.sec-eyebrow{
+  font-family:var(--mono); font-size:12px; letter-spacing:.34em;
+  color:var(--faint); margin-bottom:10px;
+}
+.sec-title{
+  font-size:clamp(26px, 3.6vw, 36px); letter-spacing:.14em;
+  color:#e9f5ec; font-weight:700; margin-bottom:14px;
+}
+.sec-title [data-lang="en"]{ letter-spacing:.03em; }
+.sec-lead{ color:var(--dim); max-width:720px; font-size:16px; }
+.theme-quote{
+  margin:34px auto 0; max-width:760px;
+  border-left:3px solid var(--accent);
+  padding:16px 24px;
+  background:linear-gradient(90deg, rgba(159,232,192,.06), transparent 70%);
+  color:var(--ink); font-size:17px; letter-spacing:.05em;
+}
+.theme-quote footer{
+  margin-top:8px; color:var(--faint); font-size:13px;
+  font-family:var(--mono); letter-spacing:.14em;
+}
+
+/* ===== 世界观三卡 ===== */
+.card-grid{
+  display:grid; grid-template-columns:repeat(3, 1fr);
+  gap:20px; margin-top:42px;
+}
+.card{
+  background:var(--panel); border:1px solid var(--line2);
+  border-radius:8px; padding:26px 24px;
+  transition:border-color .25s, transform .25s, box-shadow .25s;
+}
+.card:hover{
+  border-color:var(--line);
+  transform:translateY(-3px);
+  box-shadow:0 10px 30px rgba(0,0,0,.45), 0 0 18px rgba(159,232,192,.06);
+}
+.card h3{
+  font-size:18px; color:var(--accent); letter-spacing:.1em;
+  margin-bottom:12px; display:flex; align-items:baseline; gap:10px;
+}
+.card h3 .num{
+  font-family:var(--mono); font-size:12px; color:var(--faint); letter-spacing:.1em;
+}
+.card p{ color:var(--dim); font-size:14.5px; }
+.card p b, .card p strong{ color:var(--ink); font-weight:600; }
+.excerpt{
+  margin-top:44px; text-align:center; max-width:680px; margin-left:auto; margin-right:auto;
+}
+.excerpt blockquote{
+  font-size:17px; color:var(--ink); letter-spacing:.04em;
+  padding:0 8px;
+}
+.excerpt figcaption{
+  margin-top:12px; font-family:var(--mono); font-size:12px;
+  color:var(--faint); letter-spacing:.2em;
+}
+
+/* ===== 守则：小票 ===== */
+.rules-layout{
+  display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);
+  gap:36px; margin-top:42px; align-items:start;
+}
+.receipt{
+  background:#f7f5ec; color:#2c332e;
+  font-family:var(--mono);
+  padding:30px 28px 24px;
+  position:relative;
+  box-shadow:0 16px 44px rgba(0,0,0,.55);
+  transform:rotate(.6deg);
+  font-size:13.5px; line-height:1.7;
+}
+.receipt::before,.receipt::after{
+  content:""; position:absolute; left:0; right:0; height:10px;
+  background:linear-gradient(45deg, transparent 33%, #f7f5ec 33%, #f7f5ec 66%, transparent 66%),
+             linear-gradient(-45deg, transparent 33%, #f7f5ec 33%, #f7f5ec 66%, transparent 66%);
+  background-size:14px 20px;
+}
+.receipt::before{ top:-9px; background-position:0 0, 0 10px; }
+.receipt::after{ bottom:-9px; background-position:0 -10px, 0 0; }
+.receipt .r-head{ text-align:center; font-weight:700; letter-spacing:.24em; font-size:15px; }
+.receipt .r-sub{ text-align:center; font-size:10.5px; letter-spacing:.28em; color:#7c837b; margin:2px 0 10px; }
+.receipt .r-line{ border-top:1px dashed #b9b4a2; margin:10px 0; }
+.receipt ol{ list-style:none; counter-reset:rule; }
+.receipt ol li{
+  counter-increment:rule;
+  padding:7px 0 7px 44px; position:relative;
+  border-bottom:1px dotted #d8d3c2;
+}
+.receipt ol li:last-child{ border-bottom:none; }
+.receipt ol li::before{
+  content:"R" counter(rule, decimal-leading-zero);
+  position:absolute; left:0; top:8px;
+  font-weight:700; color:#a33327; font-size:12px; letter-spacing:.06em;
+}
+.receipt .r-foot{
+  margin-top:12px; display:flex; align-items:center; justify-content:space-between; gap:14px;
+}
+.receipt .barcode{
+  height:34px; flex:1; max-width:220px;
+  background:repeating-linear-gradient(90deg,
+    #2c332e 0 2px, transparent 2px 4px,
+    #2c332e 4px 7px, transparent 7px 10px,
+    #2c332e 10px 11px, transparent 11px 15px);
+}
+.receipt .r-total{ font-weight:700; font-size:13px; letter-spacing:.1em; text-align:right; }
+.receipt-note{
+  margin-top:16px; text-align:center; font-size:11px; color:#7c837b; letter-spacing:.2em;
+}
+.rules-side .rules-intro{ color:var(--dim); font-size:15px; }
+.rules-intro b{ color:var(--ink); }
+.crack{
+  margin-top:18px;
+  background:linear-gradient(180deg, rgba(255,69,58,.07), rgba(255,69,58,.02));
+  border:1px solid rgba(255,69,58,.28);
+  border-left:3px solid var(--bad);
+  border-radius:6px; padding:18px 20px;
+}
+.crack h4{
+  color:#ffb3ad; font-size:15px; letter-spacing:.08em; margin-bottom:8px;
+  display:flex; align-items:baseline; gap:10px; flex-wrap:wrap;
+}
+.crack h4 .pair{ font-family:var(--mono); font-size:12px; color:var(--bad); letter-spacing:.12em; }
+.crack p{ color:var(--dim); font-size:13.5px; }
+.crack p b{ color:var(--ink); }
+.rules-moral{
+  margin-top:22px; padding:14px 18px;
+  border:1px dashed var(--line); border-radius:6px;
+  color:var(--accent); font-size:14.5px; letter-spacing:.06em;
+  text-align:center;
+}
+
+/* ===== 玩法：数据 + 机制 + 三幕 ===== */
+.stats{
+  display:grid; grid-template-columns:repeat(6, 1fr); gap:14px;
+  margin-top:42px;
+}
+.stat{
+  background:var(--panel); border:1px solid var(--line2); border-radius:8px;
+  padding:20px 10px; text-align:center;
+  transition:border-color .25s;
+}
+.stat:hover{ border-color:var(--line); }
+.stat .n{
+  font-family:var(--mono); font-size:clamp(24px, 3vw, 34px); font-weight:700;
+  color:var(--accent); text-shadow:0 0 12px rgba(159,232,192,.3);
+  line-height:1.2;
+}
+.stat .l{ font-size:12.5px; color:var(--dim); letter-spacing:.1em; margin-top:6px; }
+.mech-grid{
+  display:grid; grid-template-columns:repeat(3, 1fr); gap:20px; margin-top:44px;
+}
+.mech{
+  background:var(--panel); border:1px solid var(--line2); border-radius:8px;
+  padding:24px 22px;
+}
+.mech h3{ font-size:16.5px; color:var(--accent); letter-spacing:.1em; margin-bottom:10px; }
+.mech h3 .en{ color:var(--faint); font-family:var(--mono); font-size:11px; letter-spacing:.16em; margin-left:8px; }
+.mech p{ color:var(--dim); font-size:14px; }
+.mech p b{ color:var(--ink); }
+.mech .bar-demo{
+  margin-top:14px; height:8px; border-radius:4px;
+  background:rgba(159,232,192,.08); border:1px solid var(--line2);
+  overflow:hidden;
+}
+.mech .bar-demo i{ display:block; height:100%; border-radius:3px; }
+.mech .bar-demo .fill-ok{ width:72%; background:linear-gradient(90deg,#1f8a55,#35d07f); }
+.mech .bar-demo .fill-bad{ width:34%; background:linear-gradient(90deg,#8a1f1c,#ff453a); }
+.acts{ margin-top:52px; position:relative; padding-left:26px; }
+.acts::before{
+  content:""; position:absolute; left:5px; top:8px; bottom:8px; width:2px;
+  background:linear-gradient(180deg, var(--accent), rgba(255,69,58,.65));
+  opacity:.4;
+}
+.act{ position:relative; padding:0 0 30px 18px; }
+.act:last-child{ padding-bottom:0; }
+.act::before{
+  content:""; position:absolute; left:-26px; top:7px;
+  width:12px; height:12px; border-radius:50%;
+  background:var(--bg); border:2px solid var(--accent);
+  box-shadow:0 0 10px rgba(159,232,192,.5);
+}
+.act .act-time{
+  font-family:var(--mono); font-size:12px; color:var(--warn);
+  letter-spacing:.22em;
+}
+.act h3{ font-size:18px; color:#e9f5ec; letter-spacing:.08em; margin:4px 0 8px; }
+.act p{ color:var(--dim); font-size:14.5px; max-width:640px; }
+.act p b{ color:var(--ink); }
+.endings-note{
+  margin-top:34px; display:flex; flex-wrap:wrap; gap:12px;
+}
+.chip{
+  font-family:var(--mono); font-size:13px; letter-spacing:.1em;
+  border:1px solid var(--line2); border-radius:999px;
+  padding:7px 16px; color:var(--dim);
+}
+.chip.c-death{ border-color:rgba(255,69,58,.4); color:#ffb3ad; }
+.chip.c-assim{ border-color:rgba(255,176,32,.4); color:#ffd48a; }
+.chip.c-true{ border-color:rgba(53,208,127,.5); color:#9fe8c0; }
+
+/* ===== 制作方式 ===== */
+.pipe{
+  display:grid; grid-template-columns:repeat(5, 1fr); gap:12px;
+  margin-top:44px; counter-reset:stage;
+}
+.pipe .stage{
+  counter-increment:stage;
+  background:var(--panel); border:1px solid var(--line2); border-radius:8px;
+  padding:18px 14px; text-align:center; position:relative;
+  transition:border-color .25s, transform .25s;
+}
+.pipe .stage:hover{ border-color:var(--line); transform:translateY(-3px); }
+.pipe .stage::before{
+  content:"0" counter(stage);
+  font-family:var(--mono); font-size:22px; font-weight:700;
+  color:rgba(159,232,192,.5); display:block; line-height:1.2;
+}
+.pipe .stage b{ display:block; font-size:13.5px; color:var(--ink); margin-top:6px; letter-spacing:.04em; }
+.pipe .stage span{ display:block; font-size:11.5px; color:var(--faint); margin-top:4px; line-height:1.5; }
+.made-grid{
+  display:grid; grid-template-columns:repeat(2, 1fr); gap:20px; margin-top:26px;
+}
+.made-card{
+  background:var(--panel); border:1px solid var(--line2); border-radius:8px; padding:24px 24px;
+}
+.made-card h3{ font-size:16.5px; color:var(--accent); letter-spacing:.08em; margin-bottom:10px; }
+.made-card p{ color:var(--dim); font-size:14px; }
+.made-card p b{ color:var(--ink); }
+.made-card code{
+  font-family:var(--mono); font-size:12.5px; color:#c9f7dd;
+  background:rgba(159,232,192,.08); border:1px solid var(--line2);
+  border-radius:4px; padding:1px 7px;
+}
+.qa-nums{
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-top:26px;
+}
+.qa-num{
+  border:1px dashed var(--line); border-radius:8px; padding:16px 10px;
+  text-align:center;
+}
+.qa-num .n{
+  font-family:var(--mono); font-size:clamp(20px, 2.6vw, 28px); font-weight:700;
+  color:var(--warn); line-height:1.25;
+}
+.qa-num .l{ font-size:12px; color:var(--dim); margin-top:4px; letter-spacing:.08em; }
+
+/* ===== 低语 ===== */
+.whispers{
+  display:grid; grid-template-columns:repeat(2, 1fr);
+  gap:16px 34px; margin-top:42px; max-width:860px;
+}
+.whisper{
+  position:relative; padding:14px 0 14px 26px;
+  color:var(--dim); font-size:14.5px; letter-spacing:.03em;
+  border-bottom:1px dotted var(--line2);
+  animation:whisperdrift 7s ease-in-out infinite;
+}
+.whisper:nth-child(2n){ animation-delay:1.4s; }
+.whisper:nth-child(3n){ animation-delay:2.8s; }
+.whisper::before{
+  content:""; position:absolute; left:0; top:22px;
+  width:10px; height:1px; background:var(--faint);
+}
+@keyframes whisperdrift{
+  0%,100%{ opacity:.75; } 50%{ opacity:1; }
+}
+.whispers-cap{
+  margin-top:26px; font-family:var(--mono); font-size:12px;
+  color:var(--faint); letter-spacing:.2em;
+}
+
+/* ===== 游玩 ===== */
+.play-panel{
+  margin-top:42px;
+  border:1px solid var(--line); border-radius:12px;
+  background:
+    radial-gradient(ellipse 620px 320px at 50% 0%, rgba(159,232,192,.08), transparent 70%),
+    var(--panel2);
+  padding:52px 34px; text-align:center;
+}
+.play-panel h3{
+  font-size:clamp(20px, 3vw, 26px); color:#e9f5ec; letter-spacing:.16em;
+  margin-bottom:10px;
+}
+.play-panel .play-sub{ color:var(--dim); font-size:15px; max-width:560px; margin:0 auto; }
+.play-actions{
+  display:flex; flex-wrap:wrap; gap:16px; justify-content:center; margin-top:30px;
+}
+.play-facts{
+  display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;
+  max-width:760px; margin:34px auto 0;
+}
+.fact{
+  border:1px solid var(--line2); border-radius:8px;
+  padding:14px 8px; font-size:12.5px; color:var(--dim);
+  letter-spacing:.06em; line-height:1.6;
+}
+.fact b{ display:block; color:var(--accent); font-family:var(--mono); font-size:13px; letter-spacing:.1em; margin-bottom:3px; }
+.play-note{
+  margin-top:24px; font-size:13px; color:var(--faint); letter-spacing:.04em;
+}
+
+/* ===== 页脚 ===== */
+.site-foot{
+  border-top:1px solid var(--line2);
+  padding:34px 0 40px; text-align:center;
+  background:linear-gradient(180deg, transparent, rgba(159,232,192,.03));
+}
+.site-foot .foot-sign{
+  font-family:var(--mono); font-size:12px; letter-spacing:.3em;
+  color:var(--faint); margin-bottom:14px;
+}
+.site-foot .foot-line{
+  font-family:var(--mono); font-size:14px; letter-spacing:.18em;
+  color:var(--dim);
+}
+.site-foot .foot-line b{ color:var(--accent); font-weight:600; }
+
+/* ===== 响应式 ===== */
+@media (max-width: 960px){
+  .hero .wrap{ grid-template-columns:1fr; gap:40px; }
+  .hero-visual{ order:-1; }
+  .card-grid{ grid-template-columns:1fr 1fr; }
+  .rules-layout{ grid-template-columns:1fr; }
+  .pipe{ grid-template-columns:repeat(3, 1fr); }
+  .stats{ grid-template-columns:repeat(3, 1fr); }
+  .qa-nums{ grid-template-columns:repeat(2, 1fr); }
+  .made-grid{ grid-template-columns:1fr; }
+}
+@media (max-width: 640px){
+  .site-nav{ display:none; }
+  .site-head .wrap{ gap:12px; }
+  .brand{ font-size:14px; letter-spacing:.04em; }
+  #lang-toggle{ margin-left:auto; }
+  .hero{ padding:44px 0 56px; }
+  .card-grid{ grid-template-columns:1fr; }
+  .mech-grid{ grid-template-columns:1fr; }
+  .pipe{ grid-template-columns:1fr 1fr; }
+  .stats{ grid-template-columns:repeat(2, 1fr); }
+  .whispers{ grid-template-columns:1fr; }
+  .play-facts{ grid-template-columns:1fr 1fr; }
+  section.block{ padding:60px 0; }
+  .hero-cta .btn{ width:100%; justify-content:center; }
+}
+/* 减少动态效果偏好 */
+@media (prefers-reduced-motion: reduce){
+  *{ animation:none !important; transition:none !important; }
+  html{ scroll-behavior:auto; }
+}
+</style>
+</head>
+<body>
+<div id="crt" aria-hidden="true"></div>
+
+<header class="site-head">
+  <div class="wrap">
+    <div class="brand">
+      <span class="bulb" aria-hidden="true"></span>
+      <span data-lang="zh">永昼便利店</span>
+      <span data-lang="en">Everlight Convenience Store</span>
+    </div>
+    <nav class="site-nav" aria-label="站内导航">
+      <a href="#world"><span data-lang="zh">世界观</span><span data-lang="en">World</span></a>
+      <a href="#rules"><span data-lang="zh">守则</span><span data-lang="en">Rules</span></a>
+      <a href="#gameplay"><span data-lang="zh">玩法</span><span data-lang="en">Gameplay</span></a>
+      <a href="#made"><span data-lang="zh">制作</span><span data-lang="en">How It's Made</span></a>
+      <a href="#play"><span data-lang="zh">游玩</span><span data-lang="en">Play</span></a>
+    </nav>
+    <button id="lang-toggle" type="button" aria-label="Switch Language">EN</button>
+  </div>
+</header>
+
+<main>
+  <!-- ================= Hero ================= -->
+  <section class="hero" id="top">
+    <div class="wrap">
+      <div class="hero-copy">
+        <p class="hero-eyebrow">
+          <span data-lang="zh">永昼街 · 营业时间 0:00–6:00 · 本店永不打烊</span>
+          <span data-lang="en">Everlight Street · Open 0:00–6:00 · We never close</span>
+        </p>
+        <h1 class="hero-title">
+          <span class="glitch" data-text="永昼便利店" data-lang="zh" aria-hidden="true">永昼便利店</span>
+          <span class="glitch" data-text="Everlight Convenience Store" data-lang="en" aria-hidden="true">Everlight Convenience Store</span>
+          <span class="sr-only" data-lang="zh">永昼便利店</span>
+          <span class="sr-only" data-lang="en">Everlight Convenience Store</span>
+        </h1>
+        <p class="hero-sub">
+          <span data-lang="zh">伪人规则怪谈</span>
+          <span data-lang="en">A Rules Horror of the Fake Humans</span>
+        </p>
+        <p class="hero-tagline">
+          <span data-lang="zh">一家灯火永远亮如白昼的便利店，一份自相矛盾的员工守则，和一个正在悄悄混进在岗名单里的你。收银台的时钟停在 <b>03:33</b>——天亮从不来，你要做的不是熬到天亮，而是在账被结清之前，证明自己是一件<b>被错误入库的商品</b>，然后把自己退回去。</span>
+          <span data-lang="en">A convenience store lit bright as noon forever, an employee handbook that contradicts itself, and you — quietly slipping onto the on-duty roster. The register clock is stuck at <b>03:33</b>. Morning never comes. Your job is not to survive until dawn, but to prove — before the books are settled — that you are <b>goods stocked in error</b>, and return yourself.</span>
+        </p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="永昼便利店.html" target="_blank" rel="noopener">
+            <span data-lang="zh">开始值班 · 在线游玩</span>
+            <span data-lang="en">Start Your Shift · Play Now</span>
+          </a>
+          <a class="btn btn-ghost" href="永昼便利店.html" download="永昼便利店.html">
+            <span data-lang="zh">下载离线版（182 KB · 单文件）</span>
+            <span data-lang="en">Download Offline (182 KB · single file)</span>
+          </a>
+        </div>
+        <p class="hero-meta">
+          <span data-lang="zh">AI 全自动制作 · 12 守则 / 22 节点 / 24 结局 / 7 证据 / 零随机</span>
+          <span data-lang="en">Made entirely by AI · 12 rules / 22 nodes / 24 endings / 7 evidence / zero randomness</span>
+        </p>
+      </div>
+      <div class="hero-visual" aria-hidden="true">
+        <div class="clock">
+          <div class="clock-face">
+            <span class="tick" style="transform:rotate(0deg) translateY(-46%)"></span>
+            <span class="tick" style="transform:rotate(90deg) translateY(-46%)"></span>
+            <span class="tick" style="transform:rotate(180deg) translateY(-46%)"></span>
+            <span class="tick" style="transform:rotate(270deg) translateY(-46%)"></span>
+            <span class="hand hour" style="transform:rotate(106.5deg)"></span>
+            <span class="hand minute" style="transform:rotate(198deg)"></span>
+          </div>
+          <div class="clock-digital">03<span class="blink">:</span>33</div>
+          <div class="clock-cap">
+            <span data-lang="zh">三三不尽 · 永续挂账</span>
+            <span data-lang="en">THE BOOKS NEVER BALANCE</span>
+          </div>
+        </div>
+        <div class="price-tag">
+          <div class="pt-name"><span data-lang="zh">陈 晓</span><span data-lang="en">CHEN XIAO</span></div>
+          <div class="pt-price">￥33.3</div>
+          <div class="pt-life"><span data-lang="zh">保质期：永久</span><span data-lang="en">SHELF LIFE: PERMANENT</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 世界观 ================= -->
+  <section class="block" id="world">
+    <div class="wrap">
+      <p class="sec-eyebrow">01 · THE STORE</p>
+      <h2 class="sec-title">
+        <span data-lang="zh">世界观 · 表世界与里世界之间的结算所</span>
+        <span data-lang="en">The World · A Clearing House Between Two Worlds</span>
+      </h2>
+      <p class="sec-lead">
+        <span data-lang="zh">便利店位于永昼街：店外时间凝固，招牌灯箱永远是正午的亮度，店内永远是凌晨的空旷。白天路过的人只会看见一堵贴着旧海报的围墙——只有"被招聘到"的人，能在凌晨找到那扇只朝里开的玻璃门。</span>
+        <span data-lang="en">The store sits on Everlight Street, where time outside is frozen: the sign glows with noon-bright light forever while inside is always the hollow small hours. By day, passersby see only a wall papered with old posters — only those who have been "recruited" can find, in the small hours, the glass door that only opens inward.</span>
+      </p>
+      <blockquote class="theme-quote">
+        <p>
+          <span data-lang="zh">「规则不是保护你的墙，是猎杀你的合同；矛盾不是作者的疏漏，是这个世界的裂缝。」</span>
+          <span data-lang="en">"The rules are not walls that protect you — they are contracts that hunt you. The contradictions are not the author's sloppiness — they are the cracks in this world."</span>
+        </p>
+        <footer>
+          <span data-lang="zh">—— 世界观圣经 · 主题句</span>
+          <span data-lang="en">— World Bible, theme line</span>
+        </footer>
+      </blockquote>
+      <div class="card-grid">
+        <article class="card">
+          <h3><span class="num">03:33</span><span data-lang="zh">永昼与 03:33</span><span data-lang="en">Eternal Day, 03:33</span></h3>
+          <p>
+            <span data-lang="zh">收银台的时钟停在 03:33——三三不尽，永续挂账。这家店的账本永远差最后一笔，差的那一笔就是"交接班"。只要交接不完成，夜就永远不会结束。</span>
+            <span data-lang="en">The register clock is stopped at 03:33 — the books never balance, the tab never closes. The ledger is always missing its final entry: the shift handover. As long as the handover never completes, the night never ends.</span>
+          </p>
+        </article>
+        <article class="card">
+          <h3><span class="num">REC</span><span data-lang="zh">结算所与小票</span><span data-lang="en">The Clearing House</span></h3>
+          <p>
+            <span data-lang="zh">你每一次违约，收银机打出一张贴着"债"的小票；你每一次完美服从，你的"人"就被入账一分。违约累计或同化满额的人，会被打包成商品摆上 3 号货架——价签手写人名，保质期写着"永久"。</span>
+            <span data-lang="en">Every breach prints a receipt stamped "debt"; every act of perfect obedience books a fraction of "you" into the ledger. Those who pile up debt — or complete their assimilation — are packaged as goods onto Aisle 3, a handwritten name on the price tag, "permanent" in the shelf-life field.</span>
+          </p>
+        </article>
+        <article class="card">
+          <h3><span class="num">ID</span><span data-lang="zh">伪人</span><span data-lang="en">The Fake Humans</span></h3>
+          <p>
+            <span data-lang="zh">它们潜伏在顾客与同事之中，比人类更熟练地背诵守则——一字不差，连标点停顿都对。这是它们最危险的伪装，也是最刺眼的破绽。你的活路不在"守"或"破"，而在看穿守则之间的矛盾，用它的程序反杀它。</span>
+            <span data-lang="en">They hide among customers and coworkers, reciting the handbook more fluently than any human — word for word, punctuation and pauses included. Their most dangerous disguise, and their most glaring tell. Your way out is neither obeying nor breaking the rules, but seeing through their contradictions and beating the system with its own procedure.</span>
+          </p>
+        </article>
+      </div>
+      <figure class="excerpt">
+        <blockquote>
+          <span data-lang="zh">「货架编号钉在每排端头，蓝底白字。你从 1 号开始数：1，2，4。你停住，退回半步重新数。1，2，4，5，6。」</span>
+          <span data-lang="en">"The aisle numbers are bolted to each endcap, white on blue. You count from Aisle 1: 1, 2, 4. You stop, step back half a pace, and count again. 1, 2, 4, 5, 6."</span>
+        </blockquote>
+        <figcaption>
+          <span data-lang="zh">—— 摘自游戏第一幕正文</span>
+          <span data-lang="en">— From Act I of the game</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ================= 守则 ================= -->
+  <section class="block" id="rules">
+    <div class="wrap">
+      <p class="sec-eyebrow">02 · THE HANDBOOK</p>
+      <h2 class="sec-title">
+        <span data-lang="zh">员工守则 · 12 条，其中 2 条是伪造的</span>
+        <span data-lang="en">The Employee Handbook · 12 Rules, 2 of Them Forged</span>
+      </h2>
+      <p class="sec-lead">
+        <span data-lang="zh">入职时，"值班经理"发给你一张过塑卡片《夜班员工守则》。守则条目之间彼此矛盾——而其中 R03 与 R07，是伪人一方后贴上去的"补充条款"：它们存在的目的，是制造必然违约，并借你的手替里世界抹账。</span>
+        <span data-lang="en">On your first night, the "shift manager" hands you a laminated card: the Night Shift Employee Handbook. Its clauses contradict one another — and R03 and R07 are "supplementary clauses" pasted on later by the fake humans: designed to make default inevitable, and to borrow your hand to scrub the inner world's books.</span>
+      </p>
+      <div class="rules-layout">
+        <div class="receipt" aria-label="夜班员工守则 12 条">
+          <div class="r-head"><span data-lang="zh">夜班员工守则</span><span data-lang="en">NIGHT SHIFT HANDBOOK</span></div>
+          <div class="r-sub"><span data-lang="zh">永昼便利店 · 值班经理室 制</span><span data-lang="en">EVERLIGHT CONVENIENCE STORE · ISSUED BY THE MANAGER'S OFFICE</span></div>
+          <div class="r-line" role="presentation"></div>
+          <ol>
+            <li>
+              <span data-lang="zh">你的班次是凌晨0:00至6:00。收银台的时钟停在03:33时，请照常工作，不要催它；当时钟重新走动，交接班将立刻开始——请务必在场。</span>
+              <span data-lang="en">Your shift runs from 0:00 to 6:00. If the register clock is stopped at 03:33, keep working as usual and do not rush it. When the clock starts moving again, the handover begins at once — make sure you are present.</span>
+            </li>
+            <li>
+              <span data-lang="zh">结账前请确认条形码。没有条形码的东西不是商品：不要扫码，不要触碰，不要打听价格。请微笑着请顾客自行处理。</span>
+              <span data-lang="en">Check the barcode before checkout. Anything without a barcode is not merchandise: do not scan it, do not touch it, do not ask its price. Smile, and ask the customer to handle it themselves.</span>
+            </li>
+            <li>
+              <span data-lang="zh">本店没有3号货架。顾客问起时，请回答"不知道"；如果"同事"要你去3号货架补货，请照做——补货时不要挑选，拿到什么就是什么。</span>
+              <span data-lang="en">This store has no Aisle 3. If a customer asks, answer "I don't know." If a "coworker" sends you to restock Aisle 3, do as told — no picking and choosing: whatever you grab is what goes up.</span>
+            </li>
+            <li>
+              <span data-lang="zh">冷柜属于前任店长。无论里面传出什么声音，都不要回应，更不要打开。前任店长很守时，TA会自己出来清点。</span>
+              <span data-lang="en">The freezer belongs to the previous manager. Whatever sounds come from it, do not respond, and never open it. The previous manager keeps perfect time; they will come out to take inventory on their own.</span>
+            </li>
+            <li>
+              <span data-lang="zh">回答顾客提问时请保持诚实。"不知道"只在你真的不知道时才可以说。谎言会被记账，账，是要还的。</span>
+              <span data-lang="en">Answer customers honestly. "I don't know" may only be said when you truly do not know. Lies are booked to your account — and accounts must be settled.</span>
+            </li>
+            <li>
+              <span data-lang="zh">本店永远灯火通明，任何一盏灯都不许熄灭。如果你看见某盏灯在闪烁，请立刻背对它，大声从1数到30，期间不得处理任何其他事务。</span>
+              <span data-lang="en">This store is always brightly lit; no lamp may ever go out. If you see a lamp flickering, turn your back to it at once and count aloud from 1 to 30 — and during the count, attend to nothing else.</span>
+            </li>
+            <li>
+              <span data-lang="zh">凌晨3:00，收银机会自动打印"在岗名单"。若名单上的名字比在岗人数多一个，请找到多出来的那个人，用红笔在TA的名字上画一条横线。</span>
+              <span data-lang="en">At 3:00 AM the register prints the on-duty roster automatically. If the roster shows one more name than there are staff present, find the extra person and draw a line through their name in red ink.</span>
+            </li>
+            <li>
+              <span data-lang="zh">凌晨2:00至2:30为休息时间。你可以睡在休息室的折叠床上，但必须侧躺、面向墙壁。无论听见谁用谁的声音叫你，都不要睁眼，不要应答。</span>
+              <span data-lang="en">2:00 to 2:30 is break time. You may sleep on the cot in the break room, but you must lie on your side, facing the wall. No matter whose voice calls you — in whose voice — do not open your eyes, do not answer.</span>
+            </li>
+            <li>
+              <span data-lang="zh">顾客永远是对的。不得拒绝顾客的任何要求，不得对顾客说"不"。</span>
+              <span data-lang="en">The customer is always right. Refuse no customer's request; never say "no" to a customer.</span>
+            </li>
+            <li>
+              <span data-lang="zh">本店没有镜子。如果你在反光表面看见一张不属于你的脸，请不要看清它，并且眨眼不要超过一次。</span>
+              <span data-lang="en">This store has no mirrors. If you see a face that is not yours in any reflective surface, do not look at it clearly — and do not blink more than once.</span>
+            </li>
+            <li>
+              <span data-lang="zh">请始终佩戴工牌。如果你发现工牌照片与现在的你不一致，请在下一次点名时，把工牌亲手交给多出来的那个人。</span>
+              <span data-lang="en">Always wear your badge. If the photo on your badge no longer matches you, then at the next roll call, hand your badge — in person — to the extra person.</span>
+            </li>
+            <li>
+              <span data-lang="zh">交接完成之前，请勿离开本店。正门只进不出；休息室后的安全门通往外面的走廊——那不是出口，走廊只会把你送回岗位。</span>
+              <span data-lang="en">Do not leave the store before the handover is complete. The front door only opens inward; the emergency door behind the break room leads to a corridor — that is not an exit. The corridor only ever returns you to your post.</span>
+            </li>
+          </ol>
+          <div class="r-line" role="presentation"></div>
+          <div class="r-foot">
+            <div class="barcode" role="presentation"></div>
+            <div class="r-total">
+              <span data-lang="zh">守则 ×12 · 谎债另计</span>
+              <span data-lang="en">RULES ×12 · LIES BILLED SEPARATELY</span>
+            </div>
+          </div>
+          <p class="receipt-note">
+            <span data-lang="zh">本小票为存在凭证 · 概不退换（除您能证明账实不符）</span>
+            <span data-lang="en">THIS RECEIPT IS PROOF OF EXISTENCE · NO REFUNDS (UNLESS THE BOOKS DISAGREE)</span>
+          </p>
+        </div>
+        <div class="rules-side">
+          <p class="rules-intro">
+            <span data-lang="zh">守则里有<b>三处"不可能同时遵守"的硬矛盾</b>——里世界的三道裂缝。官僚系统最怕"账对不上"：发现裂缝、收集证据、在结算时刻出示完整举证，就是活下来的方式。</span>
+            <span data-lang="en">The handbook contains <b>three hard contradictions</b> — no way to satisfy both clauses at once — and they are the three cracks in the inner world. What a bureaucracy fears most is a ledger that will not balance: find the cracks, gather the evidence, and present the full case at settlement. That is how you survive.</span>
+          </p>
+          <div class="crack">
+            <h4>
+              <span data-lang="zh">矛盾甲 · 空间裂缝</span><span data-lang="en">Crack A · Space</span>
+              <span class="pair">R02 × R09</span>
+            </h4>
+            <p>
+              <span data-lang="zh">03:12，西装顾客执意购买无条码的旧怀表。拒绝 = 违反"不得对顾客说不"；结账 = 违反"不得触碰无条码之物"。守则自带豁免句式——<b>"本店没有这件商品"</b>：规则存在"缝"。</span>
+              <span data-lang="en">At 03:12 a customer in a suit insists on buying an unbarcoded pocket watch. Refuse and you break "never say no to a customer"; ring it up and you break "never touch what has no barcode." The handbook hides an exemption — <b>"this store does not carry that item."</b> The rules have seams.</span>
+            </p>
+          </div>
+          <div class="crack">
+            <h4>
+              <span data-lang="zh">矛盾乙 · 名目裂缝</span><span data-lang="en">Crack B · The Name</span>
+              <span class="pair">R07 × R11</span>
+            </h4>
+            <p>
+              <span data-lang="zh">03:00 点名，名单四个名字、店里三个人。R07 命你划掉"多出来的那个人"；R11 命你把不一致的工牌交给同一个人。<b>抹除与承认，只能选一个。</b>划横线从未真正解决问题——名单背面写满"对不起"，被划掉的名字每晚复原。</span>
+              <span data-lang="en">At the 03:00 roll call the list has four names but only three people. R07 orders you to strike out the extra one; R11 orders you to hand your mismatched badge to that very person. <b>Erasure or acknowledgment — you may choose only one.</b> Striking the name has never solved anything: the back of the roster is covered in "sorry," and the crossed-out name restores itself every night.</span>
+            </p>
+          </div>
+          <div class="crack">
+            <h4>
+              <span data-lang="zh">矛盾丙 · 诚实裂缝</span><span data-lang="en">Crack C · Honesty</span>
+              <span class="pair">R03 × R05</span>
+            </h4>
+            <p>
+              <span data-lang="zh">一旦你目击过 2 号与 4 号货架之间的空档，"本店没有 3 号货架"对你就成了谎言：答"不知道"= 说谎记账；诚实作答 = 违反 R03。伪条款的真正目的，是<b>骗你攒"谎债"</b>——债满即清算。</span>
+              <span data-lang="en">Once you have seen the gap between Aisles 2 and 4, "there is no Aisle 3" becomes a lie for you: answer "I don't know" and the lie goes on your tab; answer honestly and you breach R03. The forged clause exists to <b>farm your debt of lies</b> — and debts get called in.</span>
+            </p>
+          </div>
+          <p class="rules-moral">
+            <span data-lang="zh">真结局的本质：用它的程序打败它。</span>
+            <span data-lang="en">The true ending, in essence: beat the bureaucracy with its own procedure.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 玩法 ================= -->
+  <section class="block" id="gameplay">
+    <div class="wrap">
+      <p class="sec-eyebrow">03 · HOW IT PLAYS</p>
+      <h2 class="sec-title">
+        <span data-lang="zh">玩法 · 两轴数值，七份证据，二十四种死法</span>
+        <span data-lang="en">Gameplay · Two Meters, Seven Evidence, Twenty-Four Endings</span>
+      </h2>
+      <p class="sec-lead">
+        <span data-lang="zh">第二人称、现在时的规则怪谈文字冒险。阅读正文、做出选择；触犯守则的选择可能直接通向死亡结局，而守则之间的矛盾缝隙里，藏着活下去的路。</span>
+        <span data-lang="en">A rules-horror text adventure told in second person, present tense. Read, choose; a choice that breaches the handbook can lead straight to a death ending, while the seams between the rules hide the way out.</span>
+      </p>
+      <div class="stats">
+        <div class="stat"><div class="n">12</div><div class="l"><span data-lang="zh">条守则</span><span data-lang="en">Rules</span></div></div>
+        <div class="stat"><div class="n">22</div><div class="l"><span data-lang="zh">个剧情节点</span><span data-lang="en">Story nodes</span></div></div>
+        <div class="stat"><div class="n">24</div><div class="l"><span data-lang="zh">种结局</span><span data-lang="en">Endings</span></div></div>
+        <div class="stat"><div class="n">7</div><div class="l"><span data-lang="zh">份矛盾证据</span><span data-lang="en">Evidence</span></div></div>
+        <div class="stat"><div class="n">27,245</div><div class="l"><span data-lang="zh">汉字正文</span><span data-lang="en">Characters</span></div></div>
+        <div class="stat"><div class="n">0</div><div class="l"><span data-lang="zh">随机数</span><span data-lang="en">Randomness</span></div></div>
+      </div>
+      <div class="mech-grid">
+        <article class="mech">
+          <h3><span data-lang="zh">理智 SAN</span><span data-lang="en">Sanity (SAN)</span></h3>
+          <p>
+            <span data-lang="zh">初始 100，是你对"自己是人"的确信度。直视异常会降低它，<b>跌到 0 会被当场划掉</b>。低于 30 时文本开始崩溃：重影、切片抖动、字符上长出陌生的附着符——理智回升后恢复干净。</span>
+            <span data-lang="en">Starts at 100 — your certainty that you are human. Looking at what you shouldn't lowers it; <b>at 0 you are crossed out on the spot</b>. Below 30 the text itself breaks down: ghosting, slicing, strange combining marks growing on the characters — and it heals when your sanity does.</span>
+          </p>
+          <div class="bar-demo" role="presentation"><i class="fill-ok"></i></div>
+        </article>
+        <article class="mech">
+          <h3><span data-lang="zh">同化率</span><span data-lang="en">Assimilation</span></h3>
+          <p>
+            <span data-lang="zh">初始 0，是你的"存在"里已被记进这家店的账的比例。顺从"店"的行为会抬高它，<b>达到 100 会被强制上架</b>。达到 60 之后，状态栏浮现"店员匹配度"，店里会周期性响起不属于你的低语。</span>
+            <span data-lang="en">Starts at 0 — the share of your existence already booked into the store's ledger. Obedience raises it; <b>at 100 you are forcibly shelved</b>. Past 60, "staff compatibility" appears on the status bar, and whispers that are not yours begin drifting through the store.</span>
+          </p>
+          <div class="bar-demo" role="presentation"><i class="fill-bad"></i></div>
+        </article>
+        <article class="mech">
+          <h3><span data-lang="zh">矛盾证据</span><span data-lang="en">Contradictory Evidence</span></h3>
+          <p>
+            <span data-lang="zh">7 份证据散落在流程里：价签、小票、名单、检修单、工牌、库存、时钟。它们是七位前任的遗产，也是你在结算时刻<b>唯一的谈判筹码</b>——凑齐 7 份，才凑得齐"账实不符"的完整举证。</span>
+            <span data-lang="en">Seven pieces of evidence are scattered through your shift: price tag, receipt, roster, maintenance sheet, badge, stock, clock. They are the legacy of seven predecessors and your <b>only bargaining chips</b> at settlement — all seven together make the complete case that the books do not match.</span>
+          </p>
+        </article>
+        <article class="mech">
+          <h3><span data-lang="zh">隐藏判定</span><span data-lang="en">Hidden Requirements</span></h3>
+          <p>
+            <span data-lang="zh">部分选项只在条件满足时才出现：足够的理智、身上带着某件物品、或手握足够多的证据。<b>没有出现的选项，就是暂时还不属于你的路。</b></span>
+            <span data-lang="en">Some choices appear only when conditions are met: enough sanity, a certain item on you, enough evidence in hand. <b>A choice you cannot see is a path that is not yet yours.</b></span>
+          </p>
+        </article>
+        <article class="mech">
+          <h3><span data-lang="zh">便签本与 CRT 终端</span><span data-lang="en">Notepad & CRT Terminal</span></h3>
+          <p>
+            <span data-lang="zh">纯 CSS 的 CRT 扫描线与噪波、打字机正文、便签本弹层随时核对守则 / 线索 / 随身物品；San &lt; 30 时正文注入故障文本，状态栏亮起红色警示。</span>
+            <span data-lang="en">Pure-CSS CRT scanlines and noise, typewriter prose, and a notepad overlay to review rules, clues and inventory at any time; below SAN 30 the text glitches and the status bar turns a shaking red.</span>
+          </p>
+        </article>
+        <article class="mech">
+          <h3><span data-lang="zh">结局图鉴</span><span data-lang="en">Ending Gallery</span></h3>
+          <p>
+            <span data-lang="zh">24 种结局全部可达，达成的结局<b>永久记录在本机浏览器</b>，未达成的条目只显示问号。存档读写全兜底，隐私模式下自动降级为内存档。</span>
+            <span data-lang="en">All 24 endings are reachable; ones you have seen are <b>kept permanently in your browser</b>, while locked entries show only question marks. Saves are fully fault-tolerant, degrading gracefully to in-memory storage in private mode.</span>
+          </p>
+        </article>
+      </div>
+      <div class="acts">
+        <div class="act">
+          <div class="act-time">ACT I · 0:00 – 2:00</div>
+          <h3><span data-lang="zh">《入职与初巡店》</span><span data-lang="en">"Onboarding &amp; First Rounds"</span></h3>
+          <p>
+            <span data-lang="zh">认识规则，第一起死亡征兆：货架缺号、冷柜敲击、每晚 00:47 来买关东煮的阿婆。幕末，补货车上出现无条码的真空袋，价签手写<b>"陈晓 ￥33.3"</b>——你确认了：这家店处理人。</span>
+            <span data-lang="en">Learn the rules, and meet the first omen: the missing aisle number, knocking from the freezer, the granny who buys oden at 00:47 every night. By the end of the act, an unbarcoded vacuum-sealed bag sits on the restocking cart, its tag handwritten — <b>"Chen Xiao ¥33.3"</b> — and you understand: this store processes people.</span>
+          </p>
+        </div>
+        <div class="act">
+          <div class="act-time">ACT II · 2:00 – 03:33</div>
+          <h3><span data-lang="zh">《深夜怪谈》</span><span data-lang="en">"Deep-Night Tales"</span></h3>
+          <p>
+            <span data-lang="zh">伪人浮现，搭档失踪，规则冲突开始咬人：休息室的叫名、03:00 点名、无条码怀表、自称来顶班的"同事"。幕末，检修单上写着——<b>"交接班时补熄 3 秒"</b>。</span>
+            <span data-lang="en">The fake humans surface, your partner vanishes, and the rule conflicts begin to bite: the voice that calls names in the break room, the 03:00 roll call, the unbarcoded pocket watch, the "coworker" who came to cover your shift. By the end, a maintenance sheet reads: <b>"lights-out of 3 seconds to be made up at handover."</b></span>
+          </p>
+        </div>
+        <div class="act">
+          <div class="act-time">ACT III · 03:33</div>
+          <h3><span data-lang="zh">《里世界与交接班》</span><span data-lang="en">"The Inner World &amp; the Handover"</span></h3>
+          <p>
+            <span data-lang="zh">真相、仪式、终局抉择：货架全由小票垒成，每张小票是一个人名。在交接台上出示七份矛盾证据 + 进货单，宣布<b>账实不符，办理退货</b>——时钟走向 24 小时里第一次出现的 03:34，然后，黎明。</span>
+            <span data-lang="en">Truth, ritual, and the final choice: the shelves turn out to be walled with receipts, each one a person's name. At the handover desk, present all seven pieces of evidence plus your own receiving slip and declare <b>the books do not match — process the return</b>. The clock moves to 03:34, the first in twenty-four hours. And then, dawn.</span>
+          </p>
+        </div>
+      </div>
+      <div class="endings-note">
+        <span class="chip c-death"><span data-lang="zh">20 × 死亡结局</span><span data-lang="en">20 × Death endings</span></span>
+        <span class="chip c-assim"><span data-lang="zh">3 × 同化结局</span><span data-lang="en">3 × Assimilation endings</span></span>
+        <span class="chip c-true"><span data-lang="zh">1 × 真结局「03:34」</span><span data-lang="en">1 × True ending "03:34"</span></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 制作方式 ================= -->
+  <section class="block" id="made">
+    <div class="wrap">
+      <p class="sec-eyebrow">04 · HOW IT WAS MADE</p>
+      <h2 class="sec-title">
+        <span data-lang="zh">制作方式 · 没有一行人类写成的剧本</span>
+        <span data-lang="en">How It Was Made · Not One Human-Written Line</span>
+      </h2>
+      <p class="sec-lead">
+        <span data-lang="zh">从世界观圣经到 QA 审计报告，《永昼便利店》全部由多智能体流水线自动生成并自动验证：主笔编剧 → 四位分幕编剧 → 剧本编辑 → 数值策划 → 前端工程师 → QA 闭环。</span>
+        <span data-lang="en">From world bible to QA audit report, Everlight Convenience Store was generated — and verified — entirely by a multi-agent pipeline: lead screenwriter → four act writers → script editor → systems designer → front-end engineer → closed-loop QA.</span>
+      </p>
+      <div class="pipe">
+        <div class="stage">
+          <b><span data-lang="zh">设定先行</span><span data-lang="en">Canon First</span></b>
+          <span><span data-lang="zh">世界观圣经 + 剧情骨架 JSON：12 守则、24 结局、人物真伪表一次钉死</span><span data-lang="en">World bible + skeleton JSON pinning all 12 rules, 24 endings and the human/fake roster</span></span>
+        </div>
+        <div class="stage">
+          <b><span data-lang="zh">四路并行</span><span data-lang="en">Four Writers</span></b>
+          <span><span data-lang="zh">act1 / act2 / act3 / endings 四位分幕编剧在准绳内并行撰写</span><span data-lang="en">Act 1 / 2 / 3 / endings drafted in parallel within the canon</span></span>
+        </div>
+        <div class="stage">
+          <b><span data-lang="zh">合并定稿</span><span data-lang="en">Merged</span></b>
+          <span><span data-lang="zh">剧本编辑合并为 27,245 汉字定稿剧本</span><span data-lang="en">Script editor merges the acts into a 27,245-character final script</span></span>
+        </div>
+        <div class="stage">
+          <b><span data-lang="zh">数值数据化</span><span data-lang="en">Design as Data</span></b>
+          <span><span data-lang="zh">状态机配置：公式、隐藏判定、结局门控，文本原样复制</span><span data-lang="en">State-machine config: formulas, hidden requirements, ending gates — prose copied verbatim</span></span>
+        </div>
+        <div class="stage">
+          <b><span data-lang="zh">引擎与 QA</span><span data-lang="en">Engine & QA</span></b>
+          <span><span data-lang="zh">单文件 HTML 引擎内嵌唯一数据源，独立 QA 闭环审计</span><span data-lang="en">Single-file HTML engine embeds the single source of truth; independent QA audits last</span></span>
+        </div>
+      </div>
+      <div class="made-grid">
+        <article class="made-card">
+          <h3><span data-lang="zh">结构准绳，不允许私设</span><span data-lang="en">A Skeleton No One May Bend</span></h3>
+          <p>
+            <span data-lang="zh">剧情骨架 JSON 先行定义 22 个节点、24 个结局、全部 flags 与守则解锁点；世界观圣经钉死设定与文风。编剧只允许在准绳内写作，禁止私设规则、地名、人名与结局——这保证了多智能体产出彼此咬合。</span>
+            <span data-lang="en">The skeleton JSON defined 22 nodes, 24 endings, all flags and rule-unlock points up front; the world bible fixed the setting and the prose style. Writers worked only within that canon — no invented rules, places, names or endings — which is what makes multi-agent output interlock.</span>
+          </p>
+        </article>
+        <article class="made-card">
+          <h3><span data-lang="zh">剧本与引擎分离</span><span data-lang="en">Script and Engine, Separated</span></h3>
+          <p>
+            <span data-lang="zh">定稿剧本原样流入状态机配置 <code>03_design.json</code>：San / 同化率公式、隐藏判定、结局门控全部数据化；HTML 引擎只认这一份唯一数据源，内嵌数据与配置文件深度一致。</span>
+            <span data-lang="en">The final script flowed untouched into the state-machine config <code>03_design.json</code>: sanity/assimilation formulas, hidden requirements and ending gates are all data. The HTML engine reads that single source of truth, and the embedded data is verified deeply equal to the file.</span>
+          </p>
+        </article>
+        <article class="made-card">
+          <h3><span data-lang="zh">确定性门禁，禁止放水</span><span data-lang="en">Deterministic Gates, No Mercy</span></h3>
+          <p>
+            <span data-lang="zh">任何"跳过检查"一律视为失败。改动数据或 HTML 后必须跑全套门禁：结构 / 数量 / 步长 / 保真 / 可达性 / 无软锁 / 标签配平 / 无外链，外加门禁防放水变异测试——故意注入 13 种缺陷，验证门禁真的会抓。</span>
+            <span data-lang="en">Any "skipped check" counts as a failure. Every data or HTML change must pass the full gate suite — structure, counts, step sizes, fidelity, reachability, no-dead-ends, tag balance, no external links — plus an anti-mutation test that injects 13 deliberate defects to prove the gates actually catch them.</span>
+          </p>
+        </article>
+        <article class="made-card">
+          <h3><span data-lang="zh">QA 真的找出过 Bug</span><span data-lang="en">QA Actually Found Bugs</span></h3>
+          <p>
+            <span data-lang="zh">独立 QA 不参与制作、只信命令输出。发布前审计发现 1 个 medium（低 San 状态栏警示失效）+ 4 个 low 缺陷，全部修复并复测通过后才交付；审计报告逐条留痕。</span>
+            <span data-lang="en">The independent QA took part in no production and trusted nothing but command output. The pre-release audit found 1 medium (low-sanity status warning dead) plus 4 low defects; all were fixed and re-verified before delivery, with every finding documented.</span>
+          </p>
+        </article>
+      </div>
+      <div class="qa-nums">
+        <div class="qa-num"><div class="n">901,807</div><div class="l"><span data-lang="zh">个状态无软锁</span><span data-lang="en">states, no dead ends</span></div></div>
+        <div class="qa-num"><div class="n">24 / 24</div><div class="l"><span data-lang="zh">结局全部可达</span><span data-lang="en">endings reachable</span></div></div>
+        <div class="qa-num"><div class="n">18 <span data-lang="zh">步</span><span data-lang="en">steps</span></div><div class="l"><span data-lang="zh">真结局最短路径</span><span data-lang="en">shortest true path</span></div></div>
+        <div class="qa-num"><div class="n">3 <span data-lang="zh">方</span><span data-lang="en">-way</span></div><div class="l"><span data-lang="zh">互证：门禁 / 模拟器 / 引擎</span><span data-lang="en">cross-check: gates / simulator / engine</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= 低语 ================= -->
+  <section class="block" id="whispers">
+    <div class="wrap">
+      <p class="sec-eyebrow">05 · WHISPERS</p>
+      <h2 class="sec-title">
+        <span data-lang="zh">店内低语 · 同化率超过 60% 之后</span>
+        <span data-lang="en">Whispers on the Floor · Past 60% Assimilation</span>
+      </h2>
+      <div class="whispers">
+        <p class="whisper">
+          <span data-lang="zh">收银机在没有任何顾客的时候响了一声。它说：挂账，挂账。</span>
+          <span data-lang="en">The register beeps with no customer in sight. It says: on the tab, on the tab.</span>
+        </p>
+        <p class="whisper">
+          <span data-lang="zh">货架深处传来价签翻转的声音，一张，又一张，像在找你的名字。</span>
+          <span data-lang="en">From deep in the shelves, the flip of price tags, one after another — as if searching for your name.</span>
+        </p>
+        <p class="whisper">
+          <span data-lang="zh">小票背面开始只印一个字：他。你盯着看了一会儿，觉得那个字有点像你。</span>
+          <span data-lang="en">The back of the receipt now prints a single word: "him." You stare at it a while. It starts to look like you.</span>
+        </p>
+        <p class="whisper">
+          <span data-lang="zh">玻璃门只朝里开。你忽然想不起来自己是怎么进来的。</span>
+          <span data-lang="en">The glass door only opens inward. You suddenly cannot remember how you came in.</span>
+        </p>
+        <p class="whisper">
+          <span data-lang="zh">时钟秒针抖动的间隔，开始等于你眨眼的间隔。</span>
+          <span data-lang="en">The intervals between the clock's twitching seconds now match the intervals between your blinks.</span>
+        </p>
+        <p class="whisper">
+          <span data-lang="zh">值班经理夸你越来越有员工的样子。这一次，它的眼睛先动了。</span>
+          <span data-lang="en">The manager praises you for looking more and more like a proper employee. This time, its eyes moved first.</span>
+        </p>
+      </div>
+      <p class="whispers-cap">
+        <span data-lang="zh">—— 摘自游戏内 12 条"世界偏移低语"，请注意分辨哪些话是你自己想的</span>
+        <span data-lang="en">— Six of the game's twelve "world-shift whispers." Please note which of these thoughts are your own.</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ================= 游玩 ================= -->
+  <section class="block" id="play">
+    <div class="wrap">
+      <p class="sec-eyebrow">06 · START YOUR SHIFT</p>
+      <h2 class="sec-title">
+        <span data-lang="zh">立即游玩 · 单文件，即开即玩</span>
+        <span data-lang="en">Play Now · One File, Zero Setup</span>
+      </h2>
+      <div class="play-panel">
+        <h3>
+          <span data-lang="zh">营业时间 0:00 至 6:00 · 本店永不打烊</span>
+          <span data-lang="en">Open 0:00 to 6:00 · We Never Close</span>
+        </h3>
+        <p class="play-sub">
+          <span data-lang="zh">游戏本体是一个约 182 KB 的单文件 HTML：原生 HTML5 + CSS3 + ES6，零外部依赖，无 CDN、无外链字体、无图片。在线打开即玩，也可以下载后断网双击游玩。</span>
+          <span data-lang="en">The game ships as a single ~182 KB HTML file: native HTML5 + CSS3 + ES6, zero external dependencies — no CDN, no web fonts, no images. Play it right in the browser, or download it and double-click offline.</span>
+        </p>
+        <div class="play-actions">
+          <a class="btn btn-primary" href="永昼便利店.html" target="_blank" rel="noopener">
+            <span data-lang="zh">开始值班（新标签页打开）</span>
+            <span data-lang="en">Start Your Shift (opens in new tab)</span>
+          </a>
+          <a class="btn btn-ghost" href="永昼便利店.html" download="永昼便利店.html">
+            <span data-lang="zh">下载离线版</span>
+            <span data-lang="en">Download Offline Copy</span>
+          </a>
+        </div>
+        <div class="play-facts">
+          <div class="fact">
+            <b><span data-lang="zh">环境</span><span data-lang="en">Runs on</span></b>
+            <span data-lang="zh">任意现代浏览器，无需安装</span>
+            <span data-lang="en">Any modern browser, nothing to install</span>
+          </div>
+          <div class="fact">
+            <b><span data-lang="zh">联网</span><span data-lang="en">Network</span></b>
+            <span data-lang="zh">不需要，完全离线可玩</span>
+            <span data-lang="en">Not required — fully playable offline</span>
+          </div>
+          <div class="fact">
+            <b><span data-lang="zh">存档</span><span data-lang="en">Saves</span></b>
+            <span data-lang="zh">结局图鉴保存在本机浏览器</span>
+            <span data-lang="en">Ending gallery kept in your browser</span>
+          </div>
+          <div class="fact">
+            <b><span data-lang="zh">语言</span><span data-lang="en">Language</span></b>
+            <span data-lang="zh">游戏本体为中文文本</span>
+            <span data-lang="en">The game itself is in Chinese</span>
+          </div>
+        </div>
+        <p class="play-note">
+          <span data-lang="zh">建议戴耳机，开着灯玩。守则与结局的冲突处，便签本里都会替你标注。</span>
+          <span data-lang="en">Headphones recommended; keep the lights on. The notepad annotates every conflict between rules and endings for you.</span>
+        </p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="wrap">
+    <p class="foot-sign">
+      <span data-lang="zh">永昼便利店 · 永昼街 0:00–6:00</span>
+      <span data-lang="en">EVERLIGHT CONVENIENCE STORE · EVERLIGHT STREET 0:00–6:00</span>
+    </p>
+    <p class="foot-line"><b>Made with AI · 2026</b></p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+  var KEY = "ycbld-site-lang";
+
+  function setLang(lang) {
+    if (lang !== "en" && lang !== "zh") lang = "zh";
+    var root = document.documentElement;
+    root.setAttribute("data-lang", lang);
+    root.setAttribute("lang", lang === "en" ? "en" : "zh-CN");
+    var btn = document.getElementById("lang-toggle");
+    if (btn) {
+      btn.textContent = lang === "en" ? "中文" : "EN";
+      btn.setAttribute("aria-label", lang === "en" ? "切换到中文" : "Switch to English");
+    }
+    try { localStorage.setItem(KEY, lang); } catch (e) { /* 存储不可用时仅本次会话生效 */ }
+  }
+
+  function switchLang() {
+    var current = document.documentElement.getAttribute("data-lang");
+    setLang(current === "en" ? "zh" : "en");
+  }
+
+  window.setLang = setLang;
+  window.switchLang = switchLang;
+
+  var saved = null;
+  try { saved = localStorage.getItem(KEY); } catch (e) { saved = null; }
+  if (saved === "en" || saved === "zh") setLang(saved);
+
+  var toggle = document.getElementById("lang-toggle");
+  if (toggle) toggle.addEventListener("click", switchLang);
+})();
+</script>
+</body>
+</html>
