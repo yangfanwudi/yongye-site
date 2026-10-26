@@ -234,19 +234,26 @@ button:hover{
 #scene-head:empty{ display:none; border-top:0; padding-top:0; margin-bottom:0; }
 #choice-echo{
   display:none;
-  position:relative;
-  margin:0 0 14px; padding:1px 0 1px 16px;
-  font-size:14px; line-height:1.85; font-style:italic; color:#9fb8a8;
+  margin:0 0 16px; padding:1px 0 1px 14px;
   border-left:2px solid rgba(159,232,192,.3);
 }
 #choice-echo.show{ display:block; animation:echoin .5s ease forwards; }
-#choice-echo::before{
-  content:"\25B8"; position:absolute; left:4px; top:1px;
-  color:rgba(159,232,192,.55); font-style:normal;
+#choice-echo .echo-head{
+  display:block;
+  font-size:12.5px; letter-spacing:.1em; font-style:italic; color:#93ab9d;
+}
+#choice-echo .echo-head::before{
+  content:"\25B8"; margin-right:6px;
+  color:rgba(159,232,192,.5); font-style:normal;
+}
+#choice-echo .echo-bridge{
+  display:block; margin-top:6px;
+  font-family:Georgia,"NSimSun","SimSun",serif;
+  font-size:15.5px; line-height:1.95; color:#cfe0d4;
 }
 #choice-echo .fx{
-  display:block; margin-top:3px;
-  font-style:normal; font-size:12px; letter-spacing:.12em;
+  display:block; margin-top:5px;
+  font-size:12px; letter-spacing:.12em;
   color:var(--accent); opacity:.72;
 }
 @keyframes echoin{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
@@ -2894,12 +2901,78 @@ function choiceEffectText(choice) {
   return parts.join(' · ');
 }
 
+const CHOICE_BRIDGES = {
+  "ch_start_read": "你把过塑卡片逐条读完，读到第十二条，指尖停在“交接”两个字上。",
+  "ch_start_ask": "你问上一班的人去了哪。它擦扫码枪的手没有停，只抬手朝卖场里让了让。",
+  "ch_start_clock": "你把钟翻过来，背面光得像一块没写过字的纸——连一节电池仓都没有。放回去时，秒针连抖都没抖一下。",
+  "ch_tour_follow": "经理报完最后一排编号就回了办公室，你照它指过的动线走回去，在收银台后面站好。",
+  "ch_tour_count": "你从 1 数到 2，下一个端头钉着 4。你退回去又数了一遍，还是 1、2、4。",
+  "ch_tour_freezer": "你顺着那阵嗡鸣往里走，越走，声音越像是从货架背后发出来的。",
+  "ch_gap_note": "你退开两步，把那条空档的位置记在心里，转身回卖场。走到收银台后面时，手心里全是汗。",
+  "ch_gap_photo": "你隔着两步举起手机，取景框里的过道比肉眼窄一半。快门落下的一瞬，你听见一声很轻的、别处的回声。你收起手机，快步走回收银台。",
+  "ch_frz_intro_knock": "你抬起手，在玻璃上敲了三长两短。里面静了一瞬，然后回了一遍，比你敲得更准。你收回手，走回收银台。",
+  "ch_frz_intro_listen": "你把耳朵贴上去，霜的凉意隔着玻璃咬住耳廓。里面没有呼吸声，只有一个节拍，像有人在数你。你直起身，快步回卖场。",
+  "ch_frz_intro_leave": "你后退着离开冷柜，一直退到灯底下才敢转过身。收银台的灯把你的影子重新按回脚边。",
+  "ch_cus1_idk": "你说不知道。阿婆点了点头，毛毯扫过地砖，门在她身后合上。你把台面收拾好，往休息室去。",
+  "ch_cus1_truth": "你说，在 2 和 4 之间。阿婆的手在毛毯边缘停了很久，才慢慢收回去，一句话也没说。她在原地又站了一会儿，才拖着毛毯出门。你等她走远，往休息室去。",
+  "ch_cus1_scan": "你低头对着扫码枪按了两下，红灯亮起又灭。阿婆站在原地等了一会儿，等到自己把话咽回去。门合上之后，你才发觉自己一直屏着呼吸。你往休息室走。",
+  "ch_zhou_ask": "你追到门口，把陈姐两个字又问了一遍。脚步在台阶下面停住，隔了很久才回一句：别问了，回去吧。你退回卖场，灯还亮着。",
+  "ch_zhou_survive": "你问他这一整晚要怎么熬。他没有回头，只抬手在你肩上按了一下，按得比一个答案还重。你目送他进了通道，才回卖场。",
+  "ch_zhou_locker": "你等他出了门，拉开那只柜子。最深处叠着几枚旧工牌，塑料壳的反光挤在一起，都是别人的名字。你把柜门推回去，回到卖场。",
+  "ch_zhou_eat": "你盛了一碗，热气顶到下巴。吃到一半才发现，汤是凉的，从第一口起就是凉的。",
+  "ch_omen_tag": "你把那个名字默念了三遍，才把撕下来的价签揣进兜里。走到休息室门口时，你忽然想不起第二遍是什么语调。",
+  "ch_omen_report": "你报告了。经理听完，道了谢，把补货车推回饮料区，朝休息室的方向抬了抬下巴。",
+  "ch_rest_sleep": "你侧过身，面朝墙壁，把呼吸放慢到和别人一样。闭上眼之后，时间变得很薄。",
+  "ch_rest_fake": "你把眼睛眯成一条缝，脸朝着墙，视线挂在门口。灯没有灭，暗处也没有变得更暗。",
+  "ch_rest_work": "你回到卖场，把货架理了一遍又一遍。理到第三排时，身后那台收银机自己响了一声。",
+  "ch_rest_breath": "你数自己的呼吸，数到第四十下，墙那边的声音停了。你睁开眼时，广播已经换了下一轮——休息时间结束了。",
+  "ch_rest_badge": "你摸黑把那枚工牌攥进掌心，攥到指节发酸。广播念到第五遍，你才起身，走出休息室。",
+  "ch_roll_cross": "红笔落下的时候，笔尖有点涩，像划在别的东西上。名单收起，收银机安静了一会儿。",
+  "ch_roll_badge": "你把工牌放在名单上，正对着那三个字。没有人来接，工牌也没有掉下去。",
+  "ch_cus2_script": "你把那八个字一个字一个字地背完。他听得很认真，然后收回怀表，转身推门走了。",
+  "ch_cus2_roster": "你把名单摊开，盖住那只表。纸上的名字压着黄铜，压出一圈很浅的印子。他看了你一会儿，走了。",
+  "ch_frz_feed": "你把纸碗从柜缝推进去，碗沿卡了一下，随后被什么东西轻轻接住。柜子里安静下来。",
+  "ch_frz_leave": "你捂住耳朵往回走，走出十几步才敢松手。敲击声还在，只是变成了你自己的心跳。",
+  "ch_aisle3_go": "你接过单子，朝那道空档走过去。越往前走，身后的卖场越安静。",
+  "ch_aisle3_ask": "你把问题原样问了出去。他笑了一下，笑容没有变，只是停在那儿等你把话说完。",
+  "ch_aisle3_dodge": "你转身抱起理货筐，把背留给他。走出几步，脚步声跟上来，贴着你半步，不远也不近。",
+  "ch_fake_test": "你把老周提过的那件事说了一半，停在那里等他自己接。他没有接，只侧身让开了半步。",
+  "ch_fake_book": "你把守则卡摊在他面前，一条一条指过去。指到第七条时，他的目光还停在第一条上，人往旁边让了让。",
+  "ch_in_pick_list": "你只拿了那盒牛奶，把它抱在胸前。转身的时候，来路的地方多了一道缝。",
+  "ch_in_leave": "你空着手往回走，什么也没有拿。身后的货架一排一排跟着你退，始终比你慢半步。",
+  "ch_in_tags": "你凑近去看价签，一个名字挨着一个名字，全是你认得的字，凑不出一个你认得的人。",
+  "ch_after_lights": "你朝灯区走，经理在前面等你，掌心朝上。越走近，灯管眨得越勤。",
+  "ch_after_stay": "你谢绝了替班，沿着货架继续走。走到灯区，第一根灯管正好在你头顶暗了一下。",
+  "ch_light_tag": "你一边数，一边用眼角把检修单上的字记住。数到三十，喉咙里的最后一下没有出声。",
+  "ch_light_count": "你背对着灯，从一数到三十，一声比一声稳。数完，你才敢转过身。",
+  "ch_act3_back": "你跟着它往员工通道里走。越往里灯越少，最后只剩它围裙上的一点反光。",
+  "ch_act3_locker": "你说要回去放东西。它没问放什么，只侧身让开半步。",
+  "ch_lock_ledger": "你把那本跳号的守则抽出来，纸页比现在的卡片软，也更旧。你把它塞进怀里，拉开门出去。",
+  "ch_lock_hook": "你解下工牌，挂上第八枚空钩。钩子一沉，走廊里的灯好像暗了一格。你退开半步，转身出去。",
+  "ch_lock_zhou": "你把老周的工牌揣进兜里，塑料壳贴着你的胸口。走出门时，身后没有人叫你。",
+  "ch_back_obey": "你把工牌摘下来，放在它摊开的手上。它收得很轻，像收一张已经核对过的单子。",
+  "ch_back_ledger": "你把初版守则摊在纸堆上，一页一页对过去。对到第七条，纸面比别处新，胶还发黏。",
+  "ch_back_receipt": "你一沓一沓地翻，翻到“今日入库”，指尖停在一张还带着打印温度的纸上。",
+  "ch_promo_tear": "你把那份合同对折，再对折，撕开。纸很脆，碎得比想象中痛快。",
+  "ch_promo_ask": "你把七枚工牌一枚一枚摆上桌面，摆成一条直线。它低头看，看了很久，没有伸手。"
+};
+
 function renderChoiceEcho(choice) {
   const el = UI.choiceEcho;
   if (!el) return;
   el.textContent = '';
   if (!choice) { el.classList.remove('show'); return; }
-  el.appendChild(document.createTextNode('你选择了「' + choice.text + '」'));
+  const head = document.createElement('span');
+  head.className = 'echo-head';
+  head.textContent = '你选择了「' + choice.text + '」';
+  el.appendChild(head);
+  const bridge = CHOICE_BRIDGES[choice.id];
+  if (bridge) {
+    const body = document.createElement('span');
+    body.className = 'echo-bridge';
+    body.textContent = bridge;
+    el.appendChild(body);
+  }
   const fx = choiceEffectText(choice);
   if (fx) {
     const span = document.createElement('span');
