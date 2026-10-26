@@ -3006,10 +3006,11 @@ function renderChoices(state, pending) {
   list.forEach(function (c, i) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = pending ? 'choice-btn pending' : 'choice-btn';
+    b.className = 'choice-btn';
     b.textContent = (i + 1) + '. ' + c.text;
     if (pending) {
       b.disabled = true; /* 正文未读完：只展示、不可点 */
+      b.classList.add('pending');
     } else {
       b.addEventListener('click', function () { handleChoice(c.id); });
     }
