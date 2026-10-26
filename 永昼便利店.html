@@ -97,7 +97,7 @@ button:hover{
 }
 
 /* ===== 屏幕切换 ===== */
-.screen{ display:none; position:relative; min-height:100vh; isolation:isolate; /* v2.4：建立层叠上下文，负 z-index 背景层才会落在本屏背景之上、文字之下 */ }
+.screen{ display:none; position:relative; min-height:100vh; isolation:isolate; /* 视觉增强：建立层叠上下文，负 z-index 背景层才会落在本屏背景之上、文字之下 */ }
 .screen.active{ display:flex; }
 
 /* ===== 标题屏 ===== */
@@ -394,7 +394,7 @@ button:hover{
 }
 @keyframes truedawn{ from{ opacity:0; } to{ opacity:1; } }
 
-/* ===== 位图背景层（v2.4 视觉增强）：固定定位子层铺在文字之下、CRT 特效之上 =====
+/* ===== 位图背景层（视觉增强）：固定定位子层铺在文字之下、CRT 特效之上 =====
    不用 background-attachment:fixed（iOS 不支持）；.screen 已 isolation:isolate，
    故 z-index:-1 的背景层只压在本屏背景之上、屏内文字之下。
    每屏再叠一层 .screen-scrim：文字区压回底色、只在边缘透出图像，保证既有文字对比度不被位图拉低。 */
