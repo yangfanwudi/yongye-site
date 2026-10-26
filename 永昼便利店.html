@@ -252,6 +252,29 @@ button:hover{
 @keyframes echoin{ from{ opacity:0; transform:translateY(4px); } to{ opacity:1; transform:none; } }
 .choice-btn.pending{ opacity:.42; cursor:default; }
 .choice-btn.pending:hover{ transform:none; border-color:var(--line); box-shadow:none; background:rgba(10,22,16,.7); }
+
+/* ===== 守则卡（夜班员工守则全文）：选项「逐条读完守则」与便签本入口共用 ===== */
+.rules-box{
+  max-width:720px;
+  display:flex; flex-direction:column;
+  max-height:84vh; overflow:hidden; /* 标题与"读完"按钮固定，只有 12 条列表滚动 */
+}
+.rules-sub{
+  font-size:12px; letter-spacing:.18em; color:var(--dim);
+  margin:-8px 0 14px; padding-bottom:10px;
+  border-bottom:1px dashed rgba(159,232,192,.18);
+  flex:0 0 auto;
+}
+#rules-body{ display:flex; flex-direction:column; flex:1 1 auto; overflow-y:auto; padding-right:6px; }
+.rule-line{ display:flex; gap:12px; padding:9px 0; border-bottom:1px solid rgba(159,232,192,.08); }
+.rule-line:last-child{ border-bottom:0; }
+.rule-line .rid{ flex:0 0 auto; color:var(--accent); font-size:12px; letter-spacing:.14em; padding-top:5px; }
+.rule-line .rtxt{ font-size:14.5px; line-height:1.95; color:var(--ink); margin:0; }
+.rules-ok{ display:block; margin:16px auto 0; min-width:190px; flex:0 0 auto; }
+.h3-btn{
+  margin-left:14px; padding:2px 10px; font-size:11px; letter-spacing:.12em;
+  vertical-align:middle; color:var(--accent); border-color:rgba(159,232,192,.3);
+}
 #ambient-line{
   color:var(--dim);
   font-style:italic;
@@ -652,9 +675,19 @@ button:hover{
 
   <div class="modal" id="modal-notepad">
     <div class="modal-box">
-      <h3>员工便签本</h3>
+      <h3>员工便签本<button id="btn-rules-card" type="button" class="h3-btn">守则卡 · 全文 12 条</button></h3>
       <button class="modal-close" id="btn-close-notepad" type="button">×</button>
       <div id="notepad-body"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal-rules">
+    <div class="modal-box rules-box">
+      <h3>夜班员工守则</h3>
+      <button class="modal-close" id="btn-close-rules" type="button">×</button>
+      <p class="rules-sub">永昼便利店 · 值班经理室 制 · 请逐条读完</p>
+      <div id="rules-body"></div>
+      <button id="btn-rules-ok" type="button" class="rules-ok">关闭</button>
     </div>
   </div>
 
@@ -3000,6 +3033,46 @@ function spawnWorldWhisper() {
   }, 6200);
 }
 
+/* ===== 守则卡：把 12 条守则原文摊开 =====
+   玩家反馈"选仔细读完规则应该给我全部规则"：设计上规则原文一直只由便签本逐条解锁承担，
+   这里补一个"实体卡片"视图——12 条一次列全（只用 GAME_DATA.rules，不新增任何文案）。 */
+const RULE_CARD_CHOICES = { ch_start_read: true, ch_fake_book: true };
+let ruleCardNext = null;
+
+function renderRuleCard() {
+  const body = UI.rulesBody;
+  if (!body) return;
+  body.textContent = '';
+  RULES.forEach(function (r) {
+    const row = document.createElement('div');
+    row.className = 'rule-line';
+    const rid = document.createElement('span');
+    rid.className = 'rid';
+    rid.textContent = r.id;
+    const txt = document.createElement('p');
+    txt.className = 'rtxt';
+    txt.textContent = r.text;
+    row.appendChild(rid);
+    row.appendChild(txt);
+    body.appendChild(row);
+  });
+}
+
+function openRuleCard(next) {
+  renderRuleCard();
+  ruleCardNext = (typeof next === 'function') ? next : null;
+  if (UI.rulesOk) UI.rulesOk.textContent = ruleCardNext ? '读完了，继续值班' : '关闭';
+  openModal('modal-rules');
+}
+
+/* 唯一关闭路径：×、读完按钮、点背景、Esc 都走这里，避免"读完再继续"的回调被漏掉 */
+function closeRuleCard() {
+  closeModal('modal-rules');
+  const next = ruleCardNext;
+  ruleCardNext = null;
+  if (next) next();
+}
+
 function renderChoices(state, pending) {
   UI.choices.textContent = '';
   const list = getAvailableChoices(state);
@@ -3066,6 +3139,11 @@ function handleChoice(choiceId) {
   if (!choice) return; /* 陈旧/非法 id：不重渲染、不跳转（旧版会静默把本节点从头再打一遍） */
   const res = applyChoice(UI.state, choiceId);
   if (res.type === 'ending') { showEnding(res.endingId); return; }
+  if (RULE_CARD_CHOICES[choice.id]) {
+    /* 「逐条读完守则」这类动作先把卡片摊给玩家看，读完再进下一场 */
+    openRuleCard(function () { renderNode(res.state, choice); });
+    return;
+  }
   renderNode(res.state, choice);
 }
 
@@ -3294,6 +3372,9 @@ function cacheDom() {
   UI.sceneFigureImg = byId('scene-figure-img');
   UI.sceneHead = byId('scene-head');
   UI.choiceEcho = byId('choice-echo');
+  UI.rulesModal = byId('modal-rules');
+  UI.rulesBody = byId('rules-body');
+  UI.rulesOk = byId('btn-rules-ok');
   UI.paraBox = byId('para-box');
   UI.whisperLine = byId('whisper-line');
   UI.whisperLayer = byId('whisper-layer');
@@ -3336,9 +3417,16 @@ function boot() {
     if (ev && typeof ev.deltaY === 'number' && ev.deltaY < 0) ScrollFollow.take();
   });
   UI.story.addEventListener('touchmove', function () { ScrollFollow.take(); });
+  byId('btn-close-rules').addEventListener('click', closeRuleCard);
+  byId('btn-rules-ok').addEventListener('click', closeRuleCard);
+  byId('btn-rules-card').addEventListener('click', function () { openRuleCard(); });
+  byId('modal-rules').addEventListener('click', function (ev) {
+    if (ev.target === byId('modal-rules')) closeRuleCard();
+  });
   UI.endText.addEventListener('click', function () { TypeWheel.skipCurrent(); });
   document.addEventListener('keydown', function (ev) {
     if (ev.key === 'Escape') {
+      if (UI.rulesModal && UI.rulesModal.classList.contains('open')) { closeRuleCard(); return; }
       const open = document.querySelectorAll('.modal.open');
       for (let i = 0; i < open.length; i++) open[i].classList.remove('open');
     }
