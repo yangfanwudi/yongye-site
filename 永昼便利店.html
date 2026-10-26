@@ -162,8 +162,9 @@ button:hover{
 }
 .stat-block{ display:flex; align-items:center; gap:8px; }
 .stat-label{ font-size:11px; letter-spacing:.22em; color:var(--dim); white-space:nowrap; }
-.bar-track{ width:130px; height:10px; border:1px solid rgba(159,232,192,.28); background:rgba(0,0,0,.55); position:relative; overflow:hidden; }
-.bar-fill{ height:100%; width:0; transition:width .5s ease; }
+.bar-track{ display:block; width:130px; height:10px; border:1px solid rgba(159,232,192,.28); background:rgba(0,0,0,.55); position:relative; overflow:hidden; }
+/* 进度条填充是行内元素：不给 display:block，width/height 全部无效——从 v2.0 起理智/同化两条进度条一直只有黑底、永远填不满 */
+.bar-fill{ display:block; height:100%; width:0; transition:width .5s ease; }
 #bar-san.ok{ background:linear-gradient(90deg,#1f8f56,var(--ok)); box-shadow:0 0 8px rgba(53,208,127,.5); }
 #bar-san.warn{ background:linear-gradient(90deg,#a8720f,var(--warn)); box-shadow:0 0 8px rgba(255,176,32,.45); }
 #bar-san.bad{ background:linear-gradient(90deg,#8f1f16,var(--bad)); box-shadow:0 0 10px rgba(255,69,58,.6); animation:barshake .34s linear infinite; }
