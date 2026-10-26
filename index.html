@@ -601,6 +601,37 @@ section.block{ padding:84px 0; border-top:1px solid var(--line2); position:relat
   color:var(--dim);
 }
 .site-foot .foot-line b{ color:var(--accent); font-weight:600; }
+.site-foot .foot-back{
+  margin-top:14px; font-family:var(--mono); font-size:12px; letter-spacing:.18em;
+}
+.site-foot .foot-back a{
+  color:var(--dim); padding:4px 12px;
+  border:1px solid var(--line2); border-radius:4px;
+  transition:color .2s, border-color .2s, box-shadow .2s;
+}
+.site-foot .foot-back a:hover{
+  color:var(--accent); border-color:var(--line);
+  box-shadow:0 0 12px rgba(159,232,192,.2);
+}
+
+/* ===== 右下角悬浮反馈按钮 ===== */
+.fb-float{
+  position:fixed; right:18px; bottom:18px; z-index:950;
+  display:inline-flex; align-items:center; gap:7px;
+  font-family:var(--mono); font-size:13px; letter-spacing:.12em;
+  color:var(--accent); background:rgba(6,14,10,.85);
+  border:1px solid var(--line); border-radius:999px;
+  padding:9px 16px;
+  box-shadow:0 4px 18px rgba(0,0,0,.5);
+  backdrop-filter:blur(4px);
+  transition:border-color .2s, box-shadow .2s, transform .2s;
+}
+.fb-float:hover{
+  border-color:var(--accent);
+  box-shadow:0 0 16px rgba(159,232,192,.3);
+  transform:translateY(-2px);
+}
+.fb-float svg{ flex:none; }
 
 /* ===== 响应式 ===== */
 @media (max-width: 960px){
@@ -627,6 +658,12 @@ section.block{ padding:84px 0; border-top:1px solid var(--line2); position:relat
   .play-facts{ grid-template-columns:1fr 1fr; }
   section.block{ padding:60px 0; }
   .hero-cta .btn{ width:100%; justify-content:center; }
+  .site-foot{ padding-bottom:84px; }
+  .fb-float{
+    right:12px;
+    bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+    padding:8px 13px; font-size:12px;
+  }
 }
 /* 减少动态效果偏好 */
 @media (prefers-reduced-motion: reduce){
@@ -1184,8 +1221,14 @@ section.block{ padding:84px 0; border-top:1px solid var(--line2); position:relat
       <span data-lang="en">EVERLIGHT CONVENIENCE STORE · EVERLIGHT STREET 0:00–6:00</span>
     </p>
     <p class="foot-line"><b>Made with AI · 2026</b></p>
+    <p class="foot-back"><a href="feedback.html">反馈 Feedback</a></p>
   </div>
 </footer>
+
+<a class="fb-float" href="feedback.html" aria-label="反馈 Feedback">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/></svg>
+  <span data-lang="zh">反馈</span><span data-lang="en">Feedback</span>
+</a>
 
 <script>
 (function () {

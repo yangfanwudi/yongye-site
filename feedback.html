@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>反馈 · 永昼便利店 · 伪人规则怪谈</title>
+<meta name="description" content="永昼便利店反馈页：通过邮箱或 GitHub Issues 向作者提交问题与建议。Feedback page for the Everlight Convenience Store rules-horror game.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='10' fill='%2304070a'/%3E%3Ccircle cx='32' cy='32' r='22' fill='none' stroke='%239fe8c0' stroke-width='3'/%3E%3Cline x1='32' y1='32' x2='32' y2='17' stroke='%239fe8c0' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='32' y1='32' x2='43' y2='40' stroke='%23ff453a' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#04070a;
+  --bg2:#070d12;
+  --panel:rgba(8,16,12,.55);
+  --panel2:rgba(10,20,15,.7);
+  --ink:#d6e4d9;
+  --dim:#8aa394;
+  --faint:#5a7266;
+  --accent:#9fe8c0;
+  --ok:#35d07f;
+  --warn:#ffb020;
+  --bad:#ff453a;
+  --line:rgba(159,232,192,.22);
+  --line2:rgba(159,232,192,.12);
+  --mono:"Cascadia Mono",Consolas,"SF Mono","Courier New",monospace;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ scroll-behavior:smooth; }
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:"Segoe UI","Microsoft YaHei","PingFang SC",sans-serif;
+  line-height:1.75;
+  min-height:100vh;
+}
+::selection{ background:rgba(159,232,192,.28); color:#eafff2; }
+a{ color:var(--accent); text-decoration:none; }
+
+/* ===== 语言切换：根元素 data-lang 控制两种语言正文显隐 ===== */
+html[data-lang="zh"] [data-lang="en"],
+html[data-lang="en"] [data-lang="zh"]{ display:none !important; }
+
+/* ===== CRT 氛围层：极淡扫描线 + 暗角（与首页一致，可读性优先） ===== */
+#crt{ position:fixed; inset:0; pointer-events:none; z-index:900; }
+#crt::before{
+  content:""; position:absolute; inset:0;
+  background:repeating-linear-gradient(to bottom, rgba(3,7,5,.10) 0 1px, transparent 1px 5px);
+}
+#crt::after{
+  content:""; position:absolute; inset:0;
+  background:radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(0,0,0,.42) 100%);
+}
+
+.wrap{ max-width:780px; margin:0 auto; padding:0 20px 56px; }
+
+/* ===== 顶栏：返回 + 语言切换 ===== */
+.topbar{
+  display:flex; justify-content:space-between; align-items:center;
+  gap:12px; flex-wrap:wrap; padding:16px 0 8px;
+}
+.backlink{
+  color:var(--dim); font-size:14px; letter-spacing:.08em;
+  padding:6px 12px; border:1px solid transparent; border-radius:4px;
+  transition:color .2s, border-color .2s;
+}
+.backlink:hover{ color:var(--accent); border-color:var(--line); }
+.lang-switch{ display:flex; gap:6px; }
+.lang-switch button{
+  font-family:var(--mono); font-size:13px; letter-spacing:.14em;
+  color:var(--dim); background:rgba(10,22,16,.7);
+  border:1px solid var(--line2); border-radius:4px;
+  padding:7px 14px; cursor:pointer; white-space:nowrap;
+  transition:border-color .2s, color .2s, box-shadow .2s;
+}
+.lang-switch button:hover{ color:var(--accent); border-color:var(--line); }
+.lang-switch button[aria-pressed="true"]{
+  color:var(--accent); border-color:var(--accent);
+  box-shadow:0 0 12px rgba(159,232,192,.25), inset 0 0 10px rgba(159,232,192,.06);
+}
+
+/* ===== 页头 ===== */
+.page-head{ text-align:center; padding:26px 0 6px; }
+.page-head .eyebrow{
+  font-family:var(--mono); font-size:12px; letter-spacing:.34em;
+  color:var(--faint); margin-bottom:12px;
+}
+.page-head h1{
+  font-size:clamp(24px, 3.4vw, 34px); font-weight:700;
+  letter-spacing:.06em; color:#e9f5ec;
+  text-shadow:0 0 18px rgba(159,232,192,.3);
+}
+.page-head h1 .amp{ color:var(--accent); }
+.page-head p{ margin-top:10px; color:var(--dim); font-size:15px; }
+
+/* ===== 顶部必看提示 ===== */
+.notice{
+  margin:24px 0 26px; padding:13px 16px;
+  background:rgba(159,232,192,.06);
+  border:1px solid var(--line); border-left:3px solid var(--warn);
+  border-radius:4px; color:var(--accent);
+  font-size:14px; display:flex; gap:10px; align-items:flex-start;
+}
+.notice svg{ flex:none; margin-top:4px; color:var(--warn); }
+.notice b{ color:#e9f5ec; }
+
+/* ===== 卡片 ===== */
+.card{
+  background:var(--panel2);
+  border:1px solid var(--line2); border-radius:6px;
+  padding:22px 24px; margin-bottom:18px;
+  box-shadow:0 0 24px rgba(0,0,0,.35);
+}
+.card h2{
+  margin:0 0 6px; font-size:17px; color:#e9f5ec;
+  display:flex; align-items:center; gap:9px; letter-spacing:.06em;
+}
+.card h2 svg{ color:var(--accent); flex:none; }
+.card > p.hint{ margin:0 0 14px; color:var(--faint); font-size:13px; }
+
+.email-row{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:10px; flex-wrap:wrap;
+  background:rgba(6,14,10,.7); border:1px solid var(--line2);
+  border-radius:6px; padding:10px 14px; margin-bottom:12px;
+}
+.email-row:last-child{ margin-bottom:0; }
+.email-row .addr{ font-family:var(--mono); font-size:14px; color:#e9f5ec; word-break:break-all; }
+.email-row .addr small{ display:block; color:var(--faint); font-size:11px; letter-spacing:.1em; }
+
+.btnrow{ display:flex; gap:10px; flex-wrap:wrap; }
+.btn{
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  font-family:inherit; font-size:14px; letter-spacing:.08em;
+  padding:9px 18px; border-radius:4px; cursor:pointer;
+  border:1px solid var(--line); color:var(--ink);
+  background:rgba(10,22,16,.7); text-decoration:none;
+  transition:border-color .2s, color .2s, box-shadow .2s, transform .2s, background .2s;
+}
+.btn:hover{
+  border-color:var(--accent); color:var(--accent);
+  box-shadow:0 0 16px rgba(159,232,192,.28), inset 0 0 12px rgba(159,232,192,.07);
+  transform:translateY(-1px);
+}
+.btn:active{ transform:translateY(0); }
+.btn-primary{
+  background:linear-gradient(180deg, rgba(53,208,127,.2), rgba(53,208,127,.08));
+  border-color:rgba(53,208,127,.55); color:#c9f7dd; font-weight:600;
+}
+.btn-primary:hover{ color:#c9f7dd; box-shadow:0 0 20px rgba(53,208,127,.35), inset 0 0 14px rgba(53,208,127,.1); }
+.btn-sm{ padding:6px 13px; font-size:12px; font-family:var(--mono); letter-spacing:.06em; }
+
+textarea#fb-text{
+  width:100%; min-height:190px; resize:vertical;
+  background:rgba(6,14,10,.7); color:var(--ink);
+  border:1px solid var(--line2); border-radius:6px;
+  padding:12px 14px; font-family:var(--mono); font-size:13px; line-height:1.7;
+}
+textarea#fb-text:focus{
+  outline:none; border-color:var(--accent);
+  box-shadow:0 0 12px rgba(159,232,192,.2), inset 0 0 10px rgba(159,232,192,.04);
+}
+
+.issues-link{
+  color:var(--accent); font-family:var(--mono); font-size:14px;
+  word-break:break-all; border-bottom:1px dashed var(--line);
+  padding-bottom:1px;
+}
+.issues-link:hover{ border-bottom-color:var(--accent); text-shadow:0 0 10px rgba(159,232,192,.4); }
+.issues-note{ color:var(--faint); font-size:12.5px; margin:10px 0 0; }
+
+.page-foot{
+  text-align:center; color:var(--faint);
+  font-family:var(--mono); font-size:12px; letter-spacing:.14em;
+  margin-top:34px;
+}
+.page-foot a{ color:var(--dim); }
+.page-foot a:hover{ color:var(--accent); }
+
+.copy-ok{ color:var(--accent) !important; border-color:var(--accent) !important; box-shadow:0 0 12px rgba(159,232,192,.3); }
+
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%);
+  white-space:nowrap; border:0;
+}
+
+@media (max-width:560px){
+  .btn{ flex:1 1 auto; }
+  .card{ padding:18px 16px; }
+}
+</style>
+</head>
+<body>
+<div id="crt" aria-hidden="true"></div>
+
+<div class="wrap">
+
+  <!-- 顶栏：返回首页 + 中英切换 -->
+  <div class="topbar">
+    <a class="backlink" href="index.html">← <span data-lang="zh">返回首页</span><span data-lang="en">Back to Home</span></a>
+    <div class="lang-switch" role="group" aria-label="Language / 语言">
+      <button type="button" data-lang-switch="zh" aria-pressed="true">中文</button>
+      <button type="button" data-lang-switch="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+
+  <header class="page-head">
+    <p class="eyebrow">EVERLIGHT CONVENIENCE STORE · 03:33</p>
+    <h1><span data-lang="zh">反馈与建议</span><span data-lang="en">Feedback <span class="amp">&amp;</span> Suggestions</span></h1>
+    <p>
+      <span data-lang="zh">《永昼便利店：伪人规则怪谈》 · 欢迎告诉我们问题或想法</span>
+      <span data-lang="en">Everlight Convenience Store: A Rules Horror · Tell us what's broken or what to improve</span>
+    </p>
+  </header>
+
+  <!-- 顶部必看说明（一行） -->
+  <div class="notice" role="note">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.4 5.3 5.6.6-4.2 3.9 1.2 5.6L12 15.5 7 18.4l1.2-5.6L4 8.9l5.6-.6L12 3Z"/></svg>
+    <p style="margin:0">
+      <span data-lang="zh">必看：反馈邮件主题请以<b>【永昼便利店】</b>开头 —— 作者已设置自动星标，带此前缀的邮件保证会被看到。</span>
+      <span data-lang="en">Must-read: start your email subject with <b>【永昼便利店】</b> — the author has an auto-star filter, so prefixed mail is guaranteed to be seen.</span>
+    </p>
+  </div>
+
+  <!-- ① 邮箱直达 -->
+  <section class="card" aria-labelledby="email-title">
+    <h2 id="email-title">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+      <span data-lang="zh">邮箱反馈</span><span data-lang="en">Email</span>
+    </h2>
+    <p class="hint">
+      <span data-lang="zh">点击按钮即打开邮件客户端 / Gmail 网页，主题与正文模板已自动填好。</span>
+      <span data-lang="en">Buttons open your mail client / Gmail web with subject and body template pre-filled.</span>
+    </p>
+
+    <!-- 主邮箱：QQ 邮箱 -->
+    <div class="email-row">
+      <p class="addr" style="margin:0">
+        898249759@qq.com
+        <small><span data-lang="zh">主邮箱 · QQ 邮箱（推荐）</span><span data-lang="en">Primary · QQ Mail (recommended)</span></small>
+      </p>
+      <span class="btnrow">
+        <a class="btn btn-primary" id="mailto-qq"
+           href="mailto:898249759@qq.com?subject=%E3%80%90%E6%B0%B8%E6%98%BC%E4%BE%BF%E5%88%A9%E5%BA%97%E3%80%91%E5%8F%8D%E9%A6%88&body=%E5%8F%8D%E9%A6%88%E5%86%85%E5%AE%B9%EF%BC%9A%0A%EF%BC%88%E8%AF%B7%E5%9C%A8%E6%AD%A4%E6%8F%8F%E8%BF%B0%E9%97%AE%E9%A2%98%E6%88%96%E5%BB%BA%E8%AE%AE%EF%BC%89%0A%0A%E7%9B%B8%E5%85%B3%E9%A1%B5%E9%9D%A2%EF%BC%9A%0A%EF%BC%88%E4%BE%8B%E5%A6%82%EF%BC%9A%E9%A6%96%E9%A1%B5%20%2F%20%E4%B8%96%E7%95%8C%E8%A7%82%20%2F%20%E5%AE%88%E5%88%99%20%2F%20%E7%8E%A9%E6%B3%95%20%2F%20%E5%88%B6%E4%BD%9C%20%2F%20%E6%B8%B8%E7%8E%A9%EF%BC%89%0A%0A%E8%81%94%E7%B3%BB%E6%96%B9%E5%BC%8F%EF%BC%9A%0A%EF%BC%88%E9%80%89%E5%A1%AB%EF%BC%8C%E6%96%B9%E4%BE%BF%E5%9B%9E%E8%AE%BF%EF%BC%89">
+          <span data-lang="zh">邮件发送</span><span data-lang="en">Send Email</span>
+        </a>
+        <button type="button" class="btn btn-sm copy-email" data-email="898249759@qq.com">
+          <span data-lang="zh">复制邮箱地址</span><span data-lang="en">Copy Address</span>
+        </button>
+      </span>
+    </div>
+
+    <!-- 次邮箱：Gmail 网页写信 -->
+    <div class="email-row">
+      <p class="addr" style="margin:0">
+        yangfan.070312@gmail.com
+        <small><span data-lang="zh">次邮箱 · Gmail（网页写信，免装客户端）</span><span data-lang="en">Secondary · Gmail (web compose, no client needed)</span></small>
+      </p>
+      <span class="btnrow">
+        <a class="btn" id="gmail-link" target="_blank" rel="noopener"
+           href="https://mail.google.com/mail/?view=cm&to=yangfan.070312@gmail.com&su=%E3%80%90%E6%B0%B8%E6%98%BC%E4%BE%BF%E5%88%A9%E5%BA%97%E3%80%91%E5%8F%8D%E9%A6%88&body=%E5%8F%8D%E9%A6%88%E5%86%85%E5%AE%B9%EF%BC%9A%0A%EF%BC%88%E8%AF%B7%E5%9C%A8%E6%AD%A4%E6%8F%8F%E8%BF%B0%E9%97%AE%E9%A2%98%E6%88%96%E5%BB%BA%E8%AE%AE%EF%BC%89%0A%0A%E7%9B%B8%E5%85%B3%E9%A1%B5%E9%9D%A2%EF%BC%9A%0A%EF%BC%88%E4%BE%8B%E5%A6%82%EF%BC%9A%E9%A6%96%E9%A1%B5%20%2F%20%E4%B8%96%E7%95%8C%E8%A7%82%20%2F%20%E5%AE%88%E5%88%99%20%2F%20%E7%8E%A9%E6%B3%95%20%2F%20%E5%88%B6%E4%BD%9C%20%2F%20%E6%B8%B8%E7%8E%A9%EF%BC%89%0A%0A%E8%81%94%E7%B3%BB%E6%96%B9%E5%BC%8F%EF%BC%9A%0A%EF%BC%88%E9%80%89%E5%A1%AB%EF%BC%8C%E6%96%B9%E4%BE%BF%E5%9B%9E%E8%AE%BF%EF%BC%89">
+          <span data-lang="zh">Gmail 网页写信</span><span data-lang="en">Compose in Gmail</span>
+        </a>
+        <button type="button" class="btn btn-sm copy-email" data-email="yangfan.070312@gmail.com">
+          <span data-lang="zh">复制邮箱地址</span><span data-lang="en">Copy Address</span>
+        </button>
+      </span>
+    </div>
+  </section>
+
+  <!-- ② 站内快速留言：textarea 拼 mailto -->
+  <section class="card" aria-labelledby="draft-title">
+    <h2 id="draft-title">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5Z"/></svg>
+      <span data-lang="zh">在线留言（站内草稿）</span><span data-lang="en">Quick Draft</span>
+    </h2>
+    <p class="hint">
+      <span data-lang="zh">在下方填写后点按钮，会为您拼好一封完整反馈邮件并打开邮件客户端。</span>
+      <span data-lang="en">Fill in below, then the button assembles a complete feedback email and opens your mail client.</span>
+    </p>
+    <label for="fb-text" class="sr-only">
+      <span data-lang="zh">反馈内容</span><span data-lang="en">Feedback content</span>
+    </label>
+    <textarea id="fb-text" placeholder=""></textarea>
+    <div class="btnrow" style="margin-top:12px">
+      <button type="button" class="btn btn-primary" id="send-mailto">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 7 9 6 9-6"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
+        <span data-lang="zh">打开邮件客户端发送</span><span data-lang="en">Open Mail Client to Send</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ③ GitHub Issues -->
+  <section class="card" aria-labelledby="issues-title">
+    <h2 id="issues-title">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9 12h6M9 8.5h6M9 15.5h4"/></svg>
+      <span data-lang="zh">GitHub Issues</span><span data-lang="en">GitHub Issues</span>
+    </h2>
+    <p class="hint">
+      <span data-lang="zh">适合公开的问题报告与功能建议，处理进度透明可追踪。</span>
+      <span data-lang="en">Best for public bug reports and feature requests with trackable progress.</span>
+    </p>
+    <a class="issues-link" href="https://github.com/yangfanwudi/yongye-site/issues" target="_blank" rel="noopener">https://github.com/yangfanwudi/yongye-site/issues</a>
+    <p class="issues-note">
+      <span data-lang="zh">* 需要 GitHub 账号；没有账号时请优先使用上方邮箱反馈。</span>
+      <span data-lang="en">* A GitHub account is required; without one, please use the email options above.</span>
+    </p>
+  </section>
+
+  <footer class="page-foot">
+    <p style="margin:0 0 6px">
+      <span data-lang="zh">本店营业时间 0:00–6:00 · 永不打烊 · 意见请在打烊前投递（其实永远不打烊）</span>
+      <span data-lang="en">Open 0:00–6:00 · We never close · Drop your feedback before closing (we never do)</span>
+    </p>
+    <p style="margin:0"><a href="index.html">© <span id="year">2026</span> 永昼便利店 · 伪人规则怪谈</a></p>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var SUBJECT = '【永昼便利店】反馈';
+  var MAIL_PRIMARY = '898249759@qq.com';
+  var MAIL_SECONDARY = 'yangfan.070312@gmail.com';
+  var TEMPLATES = {
+    zh: '反馈内容：\n（请在此描述问题或建议）\n\n相关页面：\n（例如：首页 / 世界观 / 守则 / 玩法 / 制作 / 游玩）\n\n联系方式：\n（选填，方便回访）',
+    en: 'Feedback:\n(describe the issue or suggestion here)\n\nPage:\n(e.g. Home / World / Rules / Gameplay / How It\'s Made / Play)\n\nContact:\n(optional, so we can follow up)'
+  };
+  var PLACEHOLDERS = {
+    zh: '可直接修改下方模板后发送……',
+    en: 'Edit the template below and send…'
+  };
+
+  var currentLang = 'zh';
+  var textarea = document.getElementById('fb-text');
+
+  /* ---------- 中英切换：data-lang 驱动 ---------- */
+  function switchLang(lang) {
+    if (lang !== 'zh' && lang !== 'en') lang = 'zh';
+    currentLang = lang;
+    document.documentElement.setAttribute('data-lang', lang);
+    document.documentElement.setAttribute('lang', lang === 'zh' ? 'zh-CN' : 'en');
+    document.querySelectorAll('[data-lang-switch]').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-lang-switch') === lang ? 'true' : 'false');
+    });
+    /* textarea 未被用户修改时，跟随语言切换模板 */
+    if (!textarea.dataset.dirty || textarea.value === textarea.dataset.lastTemplate) {
+      textarea.value = TEMPLATES[lang];
+      textarea.dataset.lastTemplate = TEMPLATES[lang];
+    }
+    textarea.placeholder = PLACEHOLDERS[lang];
+    /* 语言切换后同步刷新两个直达链接的正文模板 */
+    applyDirectLinks();
+    try { localStorage.setItem('yy-feedback-lang', lang); } catch (e) {}
+  }
+  window.switchLang = switchLang;   /* 供自检脚本识别 */
+
+  document.querySelectorAll('[data-lang-switch]').forEach(function (b) {
+    b.addEventListener('click', function () { switchLang(b.getAttribute('data-lang-switch')); });
+  });
+
+  /* ---------- 直达链接（静态中文兜底，JS 按 lang 刷新） ---------- */
+  function mailtoUrl(mail, subject, body) {
+    return 'mailto:' + mail + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  }
+  function gmailUrl(mail, subject, body) {
+    return 'https://mail.google.com/mail/?view=cm&to=' + encodeURIComponent(mail) +
+      '&su=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+  }
+  function applyDirectLinks() {
+    var t = TEMPLATES[currentLang];
+    document.getElementById('mailto-qq').href = mailtoUrl(MAIL_PRIMARY, SUBJECT, t);
+    document.getElementById('gmail-link').href = gmailUrl(MAIL_SECONDARY, SUBJECT, t);
+  }
+
+  /* ---------- textarea 草稿 → 打开邮件客户端 ---------- */
+  textarea.addEventListener('input', function () { textarea.dataset.dirty = '1'; });
+  document.getElementById('send-mailto').addEventListener('click', function () {
+    var text = textarea.value && textarea.value.trim() ? textarea.value : TEMPLATES[currentLang];
+    window.location.href = mailtoUrl(MAIL_PRIMARY, SUBJECT, text);
+  });
+
+  /* ---------- 复制邮箱地址（clipboard API + execCommand 兜底） ---------- */
+  function copyText(text, done) {
+    function fallback() {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); done(true); }
+      catch (e) { done(false); }
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, fallback);
+    } else { fallback(); }
+  }
+  document.querySelectorAll('.copy-email').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      copyText(btn.getAttribute('data-email'), function (ok) {
+        var label = btn.querySelector('[data-lang="' + currentLang + '"]');
+        if (!ok) {
+          window.prompt(currentLang === 'zh' ? '请手动复制：' : 'Copy manually:', btn.getAttribute('data-email'));
+          return;
+        }
+        if (label) {
+          var old = label.textContent;
+          label.textContent = currentLang === 'zh' ? '已复制 ✓' : 'Copied ✓';
+          btn.classList.add('copy-ok');
+          setTimeout(function () { label.textContent = old; btn.classList.remove('copy-ok'); }, 1600);
+        }
+      });
+    });
+  });
+
+  /* ---------- 初始化 ---------- */
+  document.getElementById('year').textContent = String(new Date().getFullYear());
+  textarea.value = TEMPLATES.zh;
+  textarea.dataset.lastTemplate = TEMPLATES.zh;
+  textarea.placeholder = PLACEHOLDERS.zh;
+  try {
+    var saved = localStorage.getItem('yy-feedback-lang');
+    if (saved !== 'en' && saved !== 'zh') {
+      /* 无本页记录时跟随主站语言偏好 */
+      saved = localStorage.getItem('ycbld-site-lang');
+    }
+    switchLang(saved === 'en' ? 'en' : 'zh');
+  } catch (e) { switchLang('zh'); }
+})();
+</script>
+</body>
+</html>
